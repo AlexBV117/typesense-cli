@@ -1,0 +1,29 @@
+{
+  "name": "ginit",
+  "version": "1.0.0",
+  "description": "Typesense js CLI adaptor",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Typesense",
+    "CLI"
+  ],
+  "author": "Alexander Baker Vallot",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/runtime": "^7.14.6",
+    "typesense": "^0.13.0",
+    "chalk": "^3.0.0",
+    "clear": "^0.1.0",
+    "clui": "^0.3.6",
+    "configstore": "^5.0.0",
+    "figlet": "^1.2.4",
+    "inquirer": "^7.0.3",
+    "minimist": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.5"
+  }
+}
