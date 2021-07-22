@@ -1,9 +1,8 @@
 const chalk = require("chalk");
 const clear = require("clear");
 const figlet = require("figlet");
-const files = require("./modules/file");
 const i = require("./modules/inquirer");
-const f = require("./modules/varsManager");
+const m = require("./modules/varsManager");
 
 clear();
 console.log(
@@ -13,7 +12,7 @@ console.log(
 const run = async () => {
   console.log("Initalise a server node:");
   const node = await i.askInitQuestions();
-  f.node(node);
+  m.node(node);
 };
 
 run();

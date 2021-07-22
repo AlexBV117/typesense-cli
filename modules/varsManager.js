@@ -1,8 +1,9 @@
 const fs = require("fs").promises;
+const f = require("./file");
 
 module.exports = {
   node: (r) => {
-    let file = "/home/alexander/Documents/typesense-cli/vars/serverNode.json";
+    let file = `${f.getCurrentDirectoryPath()}/vars/serverNode.json`;
     fs.readFile(file)
       .then((body) => JSON.parse(body))
       .then((json) => {

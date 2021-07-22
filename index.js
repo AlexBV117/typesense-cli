@@ -38,9 +38,8 @@ var _this = this;
 var chalk = require("chalk");
 var clear = require("clear");
 var figlet = require("figlet");
-var files = require("./modules/file");
 var i = require("./modules/inquirer");
-var f = require("./modules/varsManager");
+var m = require("./modules/varsManager");
 clear();
 console.log(chalk.red(figlet.textSync("TYPESENSE-CLI", { horizontalLayout: "full" })));
 var run = function () { return __awaiter(_this, void 0, void 0, function () {
@@ -52,7 +51,7 @@ var run = function () { return __awaiter(_this, void 0, void 0, function () {
                 return [4 /*yield*/, i.askInitQuestions()];
             case 1:
                 node = _a.sent();
-                f.node(node);
+                m.node(node);
                 return [2 /*return*/];
         }
     });
