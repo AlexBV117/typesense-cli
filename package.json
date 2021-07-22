@@ -10,7 +10,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd src && node index.js"
   },
   "keywords": [
     "Typesense",
@@ -20,6 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "@babel/runtime": "^7.14.6",
+    "arg": "^5.0.0",
     "chalk": "^3.0.0",
     "clear": "^0.1.0",
     "clui": "^0.3.6",

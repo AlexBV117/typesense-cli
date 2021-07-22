@@ -41,10 +41,6 @@ var typesense = require("typesense");
 var application = /** @class */ (function () {
     function application() {
         this.schemasObj = require("../vars/schemas.json");
-        this.manualData = require("../data/manual.json");
-        this.examplesData = require("../data/examples.json");
-        this.referenceData = require("../data/reference.json");
-        this.forumData = require("../data/forum.json");
         this.finalResult = [];
         this.node = require("../vars/serverNode.json");
         this.client = new typesense.Client(this.node);
@@ -64,17 +60,6 @@ var application = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    application.prototype.dependenciesCheck = function () {
-        console.log("Checking Script Dependencies...");
-        var dep = require("../package.json");
-        if (!dep.dependencies["typesense"] ||
-            !dep.dependencies["@babel/runtime"] ||
-            dep.dependencies["typesense"] !== "^0.13.0" ||
-            dep.dependencies["@babel/runtime"] !== "^7.14.6") {
-            throw new Error("ERROR MISSING DEPENDENCIES: This script is dependent on typesense js and @babel/runtime\n       Run 'npm install --save typesense@0.13.0' and 'npm intsall --save @babel/runtime@7.14.6'\n       Additionally make sure that the script is pointing to the correct package.json file. \n       The default is the package.json located in the same dirrectory as the script.\n    ");
-        }
-        console.log("Dependencies ✔\n");
-    };
     /**
      * EAMPLE:
      *
@@ -92,36 +77,11 @@ var application = /** @class */ (function () {
      * @param dataArray The index of each internal array will correspond to the collection referenced at the same index of the Schema array.
      * @returns An array of successfully indexed documents
      */
-    application.prototype.indexData = function (schemaArray, dataArray) {
+    application.prototype.indexData = function (p) {
         return __awaiter(this, void 0, void 0, function () {
-            var index, dataAtIndex, results;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.processInput(schemaArray, dataArray);
-                        console.log("Staring Index...\n");
-                        this.dependenciesCheck();
-                        return [4 /*yield*/, this.refreshSchemas()];
-                    case 1:
-                        _a.sent();
-                        index = 0;
-                        _a.label = 2;
-                    case 2:
-                        if (!(index < this.obj.data.length)) return [3 /*break*/, 5];
-                        dataAtIndex = this.obj.data[index];
-                        return [4 /*yield*/, this.chunkData(index, dataAtIndex)];
-                    case 3:
-                        _a.sent();
-                        _a.label = 4;
-                    case 4:
-                        index++;
-                        return [3 /*break*/, 2];
-                    case 5: return [4 /*yield*/, Promise.all(this.finalResult)];
-                    case 6:
-                        results = _a.sent();
-                        console.log("\nFinished indexing " + this.getNumberOfIndexed(this.finalResult).toString() + " documents into memory in " + this.timeTaken());
-                        return [2 /*return*/, results];
-                }
+                this.processInput(p);
+                return [2 /*return*/];
             });
         });
     };
@@ -390,30 +350,8 @@ var application = /** @class */ (function () {
      * @param schemaArray passed trought from .indexData()
      * @param dataArray passed through from .indexData()
      */
-    application.prototype.processInput = function (schemaArray, dataArray) {
-        for (var _i = 0, schemaArray_1 = schemaArray; _i < schemaArray_1.length; _i++) {
-            var items = schemaArray_1[_i];
-            if (this.schemasObj[items]) {
-                this.schemaArray.push(this.schemasObj[items]);
-            }
-            else {
-                throw new Error(items + " is not a predefined schema!!!");
-            }
-        }
-        for (var _a = 0, dataArray_1 = dataArray; _a < dataArray_1.length; _a++) {
-            var items = dataArray_1[_a];
-            var length_1 = items.length;
-            var arrayy = [];
-            for (var i = 0; i < length_1; i++) {
-                if (this[items[i]]) {
-                    arrayy.push(this[items[i]]);
-                }
-                else {
-                    throw new Error("Unknown data set!!!");
-                }
-            }
-            this.dataArray.push(arrayy);
-        }
+    application.prototype.processInput = function (p) {
+        console.log(p);
     };
     /**
      * Creates a new api key
@@ -488,6 +426,9 @@ var application = /** @class */ (function () {
      */
     application.prototype.removeKey = function (id) {
         this.client.keys(id).delete();
+    };
+    application.prototype.test = function (x) {
+        console.log(x);
     };
     return application;
 }());

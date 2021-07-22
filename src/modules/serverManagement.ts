@@ -5,10 +5,6 @@ export class application {
   private date1: any;
   private date2: any;
   private schemasObj = require("../vars/schemas.json");
-  private manualData = require("../data/manual.json");
-  private examplesData = require("../data/examples.json");
-  private referenceData = require("../data/reference.json");
-  private forumData = require("../data/forum.json");
   private finalResult = [];
   private node = require("../vars/serverNode.json");
   private client = new typesense.Client(this.node);
@@ -22,25 +18,6 @@ export class application {
       length: length,
       repeatedSchema: true,
     };
-  }
-  private dependenciesCheck() {
-    console.log("Checking Script Dependencies...");
-    let dep = require("../package.json");
-    if (
-      !dep.dependencies["typesense"] ||
-      !dep.dependencies["@babel/runtime"] ||
-      (dep.dependencies["typesense"] as string) !== "^0.13.0" ||
-      (dep.dependencies["@babel/runtime"] as string) !== "^7.14.6"
-    ) {
-      throw new Error(
-        `ERROR MISSING DEPENDENCIES: This script is dependent on typesense js and @babel/runtime
-       Run 'npm install --save typesense@0.13.0' and 'npm intsall --save @babel/runtime@7.14.6'
-       Additionally make sure that the script is pointing to the correct package.json file. 
-       The default is the package.json located in the same dirrectory as the script.
-    `
-      );
-    }
-    console.log("Dependencies ✔\n");
   }
   /**
    * EAMPLE:
@@ -59,25 +36,21 @@ export class application {
    * @param dataArray The index of each internal array will correspond to the collection referenced at the same index of the Schema array.
    * @returns An array of successfully indexed documents
    */
-  public async indexData(
-    schemaArray: Array<string>,
-    dataArray: Array<Array<string>>
-  ) {
-    this.processInput(schemaArray, dataArray);
-    console.log("Staring Index...\n");
-    this.dependenciesCheck();
-    await this.refreshSchemas();
-    for (let index = 0; index < this.obj.data.length; index++) {
-      let dataAtIndex = this.obj.data[index];
-      await this.chunkData(index, dataAtIndex);
-    }
-    let results = await Promise.all(this.finalResult);
-    console.log(
-      `\nFinished indexing ${this.getNumberOfIndexed(
-        this.finalResult
-      ).toString()} documents into memory in ${this.timeTaken()}`
-    );
-    return results;
+  public async indexData(p) {
+    this.processInput(p);
+    // console.log("Staring Index...\n");
+    // await this.refreshSchemas();
+    // for (let index = 0; index < this.obj.data.length; index++) {
+    //   let dataAtIndex = this.obj.data[index];
+    //   await this.chunkData(index, dataAtIndex);
+    // }
+    // let results = await Promise.all(this.finalResult);
+    // console.log(
+    //   `\nFinished indexing ${this.getNumberOfIndexed(
+    //     this.finalResult
+    //   ).toString()} documents into memory in ${this.timeTaken()}`
+    // );
+    // return results;
   }
 
   /**
@@ -260,26 +233,8 @@ export class application {
    * @param schemaArray passed trought from .indexData()
    * @param dataArray passed through from .indexData()
    */
-  private processInput(schemaArray, dataArray) {
-    for (let items of schemaArray) {
-      if (this.schemasObj[items]) {
-        this.schemaArray.push(this.schemasObj[items]);
-      } else {
-        throw new Error(`${items} is not a predefined schema!!!`);
-      }
-    }
-    for (let items of dataArray) {
-      let length = items.length;
-      let arrayy = [];
-      for (let i = 0; i < length; i++) {
-        if (this[items[i]]) {
-          arrayy.push(this[items[i]]);
-        } else {
-          throw new Error(`Unknown data set!!!`);
-        }
-      }
-      this.dataArray.push(arrayy);
-    }
+  private processInput(p) {
+    console.log(p);
   }
   /**
    * Creates a new api key
@@ -331,5 +286,9 @@ export class application {
    */
   public removeKey(id: number) {
     this.client.keys(id).delete();
+  }
+
+  public test(x) {
+    console.log(x);
   }
 }
