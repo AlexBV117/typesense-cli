@@ -1,24 +1,17 @@
 "use strict";
 const typesense = require("typesense");
+const file = require("./file");
 
 export class application {
   private date1: any;
   private date2: any;
-  private schemasObj = require("../vars/schemas.json");
+  private schemas = require("../vars/schemas.json");
   private finalResult = [];
   private node = require("../vars/serverNode.json");
   private client = new typesense.Client(this.node);
-  private schemaArray = [];
-  private dataArray = [];
-  private get obj() {
-    let length = this.schemaArray.length;
-    return {
-      schema: this.schemaArray,
-      data: this.dataArray,
-      length: length,
-      repeatedSchema: true,
-    };
-  }
+  private json: any;
+  private collection: any;
+
   /**
    * EAMPLE:
    *
@@ -37,68 +30,121 @@ export class application {
    * @returns An array of successfully indexed documents
    */
   public async indexData(p) {
-    this.processInput(p);
-    // console.log("Staring Index...\n");
-    // await this.refreshSchemas();
-    // for (let index = 0; index < this.obj.data.length; index++) {
-    //   let dataAtIndex = this.obj.data[index];
-    //   await this.chunkData(index, dataAtIndex);
-    // }
+    this.date1 = new Date();
+    this.json = JSON.parse(p);
+    await this.getCol();
+    console.log("Staring Index...\n");
+    this.inputValidation();
+    await this.refreshSchemas();
+    await this.chunkData();
     // let results = await Promise.all(this.finalResult);
     // console.log(
     //   `\nFinished indexing ${this.getNumberOfIndexed(
     //     this.finalResult
     //   ).toString()} documents into memory in ${this.timeTaken()}`
     // );
+    this.date2 = new Date();
     // return results;
   }
 
+  private inputValidation() {
+    if (this.schemasExist()) {
+      this.dataExists();
+    }
+  }
+
+  private schemasExist() {
+    for (let i = 0; i < this.json.length; i++) {
+      if (!this.schemas[this.json[i].collection]) {
+        throw new Error(
+          `"${this.json[i].collection}" is not a known collection!!!`
+        );
+      }
+    }
+    return true;
+  }
+
+  private dataExists() {
+    for (let i = 0; i < this.json.length; i++) {
+      for (let i2 = 0; i2 < this.json[i].data.length; i2++) {
+        if (!file.directoryExists(this.json[i].data[i2])) {
+          throw new Error(
+            `Path to data file does not exist: ${this.json[i].data[i2]}`
+          );
+        }
+      }
+    }
+    return true;
+  }
   /**
    * deleates the old Schemas from the server and creates new empty ones
    */
   private async refreshSchemas() {
-    for (let i = 0; i < this.obj.schema.length; i++) {
-      console.log(`Refreshing ${this.obj.schema[i].name} collection:`);
-      try {
-        this.client.collections(this.obj.schema[i].name).delete();
-        console.log(`├── Old ${this.obj.schema[i].name} collection deleated`);
-      } catch {
-        (error) => {
+    for (let i = 0; i < this.json.length; i++) {
+      if (this.alreadyACollection(i)) {
+        console.log(`Refreshing ${this.json[i].collection} collection:`);
+        try {
+          await this.client.collections(this.json[i].collection).delete();
+          console.log(`├── Old ${this.json[i].collection} collection deleted`);
+          await this.client
+            .collections()
+            .create(this.schemas[this.json[i].collection]);
+          console.log(`└── New ${this.json[i].collection} collection created`);
+        } catch {
+          (error) => {
+            console.log(error);
+          };
+        }
+      } else {
+        console.log(`Creating the ${this.json[i].collection} collection:`);
+        try {
+          await this.client
+            .collections()
+            .create(this.schemas[this.json[i].collection]);
+          console.log(`└── ${this.json[i].collection} collection created`);
+        } catch (error) {
           console.log(error);
-        };
+        }
       }
-      await this.client.collections().create(this.obj.schema[i]);
-      console.log(`└── New ${this.obj.schema[i].name} collection created`);
     }
   }
-  private async chunkData(index, dataAtIndex: Array<Array<object>>) {
-    this.date1 = new Date();
-    console.log(`\n${this.obj.schema[index].name}:`);
-    for (let index2 = 0; index2 < dataAtIndex.length; index2++) {
-      let last: boolean;
-      if (index2 === dataAtIndex.length - 1) {
-        last = true;
-      } else {
-        last = false;
-      }
-      let x = 0;
-      let start = 0;
-      let chunkSize = 10000;
-      if (dataAtIndex[index2].length < chunkSize) {
-        await this.indexToCollections(index, dataAtIndex[index2], last);
-      } else {
-        while (
-          dataAtIndex[index2].length > 0 &&
-          dataAtIndex[index2].length > chunkSize
-        ) {
-          let ret = dataAtIndex[index2].splice(start, chunkSize);
-          await this.indexToCollections(index, ret, false);
-          x++;
-        }
-        await this.indexToCollections(index, dataAtIndex[index2], last);
+
+  private alreadyACollection(i) {
+    for (let i2 = 0; i2 < this.collection.length; i2++) {
+      if (this.collection[i2].name === this.json[i].collection) {
+        return true;
       }
     }
-    this.date2 = new Date();
+    return false;
+  }
+
+  private async getCol() {
+    this.collection = await this.client.collections().retrieve();
+  }
+
+  private async chunkData() {
+    for (let i = 0; i < this.json.length; i++) {
+      console.log(`\n${this.json[i].collection}:`);
+      for (let i2 = 0; i2 < this.json[i].data.length; i2++) {
+        let last: boolean;
+        if (i2 === this.json[i].data.length - 1) {
+          last = true;
+        } else {
+          last = false;
+        }
+        let chunkSize = 10000;
+        let data = require(this.json[i].data[i2]);
+        if (data.length < chunkSize) {
+          await this.indexToCollections(i, data, last);
+        } else {
+          while (data.length > chunkSize) {
+            let ret = data.splice(0, chunkSize);
+            await this.indexToCollections(i, ret, false);
+          }
+          await this.indexToCollections(i, data, last);
+        }
+      }
+    }
   }
 
   timeTaken() {
@@ -120,13 +166,13 @@ export class application {
    * takes all the data sets in an array (within the dataArray) and indexes them in the server with the realted schema
    */
   private async indexToCollections(
-    index,
+    i,
     dataAtIndex: Array<object>,
     last: boolean
   ) {
     try {
       const returned = await this.client
-        .collections(this.obj.schema[index].name)
+        .collections(this.json[i].collection)
         .documents()
         .import(dataAtIndex);
       const failed = returned.filter((item) => item.success === false);
@@ -136,11 +182,11 @@ export class application {
       this.finalResult.push(returned);
       if (last) {
         console.log(
-          `└── Successfully indexed ${dataAtIndex.length} docunents into the ${this.obj.schema[index].name} collection`
+          `└── Successfully indexed ${dataAtIndex.length} docunents into the ${this.json[i].collection} collection`
         );
       } else {
         console.log(
-          `├── Successfully indexed ${dataAtIndex.length} docunents into the ${this.obj.schema[index].name} collection`
+          `├── Successfully indexed ${dataAtIndex.length} docunents into the ${this.json[i].collection} collection`
         );
       }
     } catch (error) {
@@ -152,13 +198,13 @@ export class application {
       }
     }
   }
-  public async createCollection() {
-    try {
-      await this.client.collections().create(this.schemasObj.forumSchema);
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  // public async createCollection() {
+  //   try {
+  //     await this.client.collections().create(this.schemas.forum);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
   /**
    * counts the number of successfully indexed documents
    * @param indexedData array of all successfully indexed documents
@@ -220,22 +266,13 @@ export class application {
   /**
    * Returns a list of all the available schemas.
    */
-  public schemaList() {
-    console.log(`
-    {
-      ${JSON.stringify(this.schemasObj, null, "   ")},
-    }
-    `);
-  }
-  /**
-   * Interprits the provided arrays of stings and ties them to the instancs of the class
-   * will throw an error if the provided shemas and data sets dont match properties of the class.
-   * @param schemaArray passed trought from .indexData()
-   * @param dataArray passed through from .indexData()
-   */
-  private processInput(p) {
-    console.log(p);
-  }
+  // public schemaList() {
+  //   console.log(`
+  //   {
+  //     ${JSON.stringify(this.schemasObj, null, "   ")},
+  //   }
+  //   `);
+  // }
   /**
    * Creates a new api key
    * If no arguments are passed then a search only key will be made that can search across all collections.

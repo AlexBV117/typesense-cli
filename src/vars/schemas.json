@@ -1,12 +1,12 @@
 {
-  "autoSchema": {
+  "automatic": {
     "name": "automatic",
     "fields": [
       { "name": ".*", "type": "auto" },
       { "name": "title", "type": "string", "facet": true }
     ]
   },
-  "forumSchema": {
+  "forum": {
     "name": "forum",
     "fields": [
       { "name": "docType", "type": "string" },

@@ -38,28 +38,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.application = void 0;
 var typesense = require("typesense");
+var file = require("./file");
 var application = /** @class */ (function () {
     function application() {
-        this.schemasObj = require("../vars/schemas.json");
+        this.schemas = require("../vars/schemas.json");
         this.finalResult = [];
         this.node = require("../vars/serverNode.json");
         this.client = new typesense.Client(this.node);
-        this.schemaArray = [];
-        this.dataArray = [];
     }
-    Object.defineProperty(application.prototype, "obj", {
-        get: function () {
-            var length = this.schemaArray.length;
-            return {
-                schema: this.schemaArray,
-                data: this.dataArray,
-                length: length,
-                repeatedSchema: true,
-            };
-        },
-        enumerable: false,
-        configurable: true
-    });
     /**
      * EAMPLE:
      *
@@ -80,93 +66,186 @@ var application = /** @class */ (function () {
     application.prototype.indexData = function (p) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                this.processInput(p);
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        this.date1 = new Date();
+                        this.json = JSON.parse(p);
+                        return [4 /*yield*/, this.getCol()];
+                    case 1:
+                        _a.sent();
+                        console.log("Staring Index...\n");
+                        this.inputValidation();
+                        return [4 /*yield*/, this.refreshSchemas()];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, this.chunkData()];
+                    case 3:
+                        _a.sent();
+                        // let results = await Promise.all(this.finalResult);
+                        // console.log(
+                        //   `\nFinished indexing ${this.getNumberOfIndexed(
+                        //     this.finalResult
+                        //   ).toString()} documents into memory in ${this.timeTaken()}`
+                        // );
+                        this.date2 = new Date();
+                        return [2 /*return*/];
+                }
             });
         });
+    };
+    application.prototype.inputValidation = function () {
+        if (this.schemasExist()) {
+            this.dataExists();
+        }
+    };
+    application.prototype.schemasExist = function () {
+        for (var i = 0; i < this.json.length; i++) {
+            if (!this.schemas[this.json[i].collection]) {
+                throw new Error("\"" + this.json[i].collection + "\" is not a known collection!!!");
+            }
+        }
+        return true;
+    };
+    application.prototype.dataExists = function () {
+        for (var i = 0; i < this.json.length; i++) {
+            for (var i2 = 0; i2 < this.json[i].data.length; i2++) {
+                if (!file.directoryExists(this.json[i].data[i2])) {
+                    throw new Error("Path to data file does not exist: " + this.json[i].data[i2]);
+                }
+            }
+        }
+        return true;
     };
     /**
      * deleates the old Schemas from the server and creates new empty ones
      */
     application.prototype.refreshSchemas = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var i;
+            var i, _a, error_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        i = 0;
+                        _b.label = 1;
+                    case 1:
+                        if (!(i < this.json.length)) return [3 /*break*/, 12];
+                        if (!this.alreadyACollection(i)) return [3 /*break*/, 7];
+                        console.log("Refreshing " + this.json[i].collection + " collection:");
+                        _b.label = 2;
+                    case 2:
+                        _b.trys.push([2, 5, , 6]);
+                        return [4 /*yield*/, this.client.collections(this.json[i].collection).delete()];
+                    case 3:
+                        _b.sent();
+                        console.log("\u251C\u2500\u2500 Old " + this.json[i].collection + " collection deleted");
+                        return [4 /*yield*/, this.client
+                                .collections()
+                                .create(this.schemas[this.json[i].collection])];
+                    case 4:
+                        _b.sent();
+                        console.log("\u2514\u2500\u2500 New " + this.json[i].collection + " collection created");
+                        return [3 /*break*/, 6];
+                    case 5:
+                        _a = _b.sent();
+                        (function (error) {
+                            console.log(error);
+                        });
+                        return [3 /*break*/, 6];
+                    case 6: return [3 /*break*/, 11];
+                    case 7:
+                        console.log("Creating the " + this.json[i].collection + " collection:");
+                        _b.label = 8;
+                    case 8:
+                        _b.trys.push([8, 10, , 11]);
+                        return [4 /*yield*/, this.client
+                                .collections()
+                                .create(this.schemas[this.json[i].collection])];
+                    case 9:
+                        _b.sent();
+                        console.log("\u2514\u2500\u2500 " + this.json[i].collection + " collection created");
+                        return [3 /*break*/, 11];
+                    case 10:
+                        error_1 = _b.sent();
+                        console.log(error_1);
+                        return [3 /*break*/, 11];
+                    case 11:
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 12: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    application.prototype.alreadyACollection = function (i) {
+        for (var i2 = 0; i2 < this.collection.length; i2++) {
+            if (this.collection[i2].name === this.json[i].collection) {
+                return true;
+            }
+        }
+        return false;
+    };
+    application.prototype.getCol = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this;
+                        return [4 /*yield*/, this.client.collections().retrieve()];
+                    case 1:
+                        _a.collection = _b.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    application.prototype.chunkData = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var i, i2, last, chunkSize, data, ret;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         i = 0;
                         _a.label = 1;
                     case 1:
-                        if (!(i < this.obj.schema.length)) return [3 /*break*/, 4];
-                        console.log("Refreshing " + this.obj.schema[i].name + " collection:");
-                        try {
-                            this.client.collections(this.obj.schema[i].name).delete();
-                            console.log("\u251C\u2500\u2500 Old " + this.obj.schema[i].name + " collection deleated");
-                        }
-                        catch (_b) {
-                            (function (error) {
-                                console.log(error);
-                            });
-                        }
-                        return [4 /*yield*/, this.client.collections().create(this.obj.schema[i])];
+                        if (!(i < this.json.length)) return [3 /*break*/, 10];
+                        console.log("\n" + this.json[i].collection + ":");
+                        i2 = 0;
+                        _a.label = 2;
                     case 2:
-                        _a.sent();
-                        console.log("\u2514\u2500\u2500 New " + this.obj.schema[i].name + " collection created");
-                        _a.label = 3;
-                    case 3:
-                        i++;
-                        return [3 /*break*/, 1];
-                    case 4: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    application.prototype.chunkData = function (index, dataAtIndex) {
-        return __awaiter(this, void 0, void 0, function () {
-            var index2, last, x, start, chunkSize, ret;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.date1 = new Date();
-                        console.log("\n" + this.obj.schema[index].name + ":");
-                        index2 = 0;
-                        _a.label = 1;
-                    case 1:
-                        if (!(index2 < dataAtIndex.length)) return [3 /*break*/, 8];
+                        if (!(i2 < this.json[i].data.length)) return [3 /*break*/, 9];
                         last = void 0;
-                        if (index2 === dataAtIndex.length - 1) {
+                        if (i2 === this.json[i].data.length - 1) {
                             last = true;
                         }
                         else {
                             last = false;
                         }
-                        x = 0;
-                        start = 0;
                         chunkSize = 10000;
-                        if (!(dataAtIndex[index2].length < chunkSize)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.indexToCollections(index, dataAtIndex[index2], last)];
-                    case 2:
-                        _a.sent();
-                        return [3 /*break*/, 7];
+                        data = require(this.json[i].data[i2]);
+                        if (!(data.length < chunkSize)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.indexToCollections(i, data, last)];
                     case 3:
-                        if (!(dataAtIndex[index2].length > 0 &&
-                            dataAtIndex[index2].length > chunkSize)) return [3 /*break*/, 5];
-                        ret = dataAtIndex[index2].splice(start, chunkSize);
-                        return [4 /*yield*/, this.indexToCollections(index, ret, false)];
+                        _a.sent();
+                        return [3 /*break*/, 8];
                     case 4:
+                        if (!(data.length > chunkSize)) return [3 /*break*/, 6];
+                        ret = data.splice(0, chunkSize);
+                        return [4 /*yield*/, this.indexToCollections(i, ret, false)];
+                    case 5:
                         _a.sent();
-                        x++;
-                        return [3 /*break*/, 3];
-                    case 5: return [4 /*yield*/, this.indexToCollections(index, dataAtIndex[index2], last)];
-                    case 6:
-                        _a.sent();
-                        _a.label = 7;
+                        return [3 /*break*/, 4];
+                    case 6: return [4 /*yield*/, this.indexToCollections(i, data, last)];
                     case 7:
-                        index2++;
-                        return [3 /*break*/, 1];
+                        _a.sent();
+                        _a.label = 8;
                     case 8:
-                        this.date2 = new Date();
-                        return [2 /*return*/];
+                        i2++;
+                        return [3 /*break*/, 2];
+                    case 9:
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 10: return [2 /*return*/];
                 }
             });
         });
@@ -189,15 +268,15 @@ var application = /** @class */ (function () {
     /**
      * takes all the data sets in an array (within the dataArray) and indexes them in the server with the realted schema
      */
-    application.prototype.indexToCollections = function (index, dataAtIndex, last) {
+    application.prototype.indexToCollections = function (i, dataAtIndex, last) {
         return __awaiter(this, void 0, void 0, function () {
-            var returned, failed, error_1, i;
+            var returned, failed, error_2, i_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, this.client
-                                .collections(this.obj.schema[index].name)
+                                .collections(this.json[i].collection)
                                 .documents()
                                 .import(dataAtIndex)];
                     case 1:
@@ -208,18 +287,18 @@ var application = /** @class */ (function () {
                         }
                         this.finalResult.push(returned);
                         if (last) {
-                            console.log("\u2514\u2500\u2500 Successfully indexed " + dataAtIndex.length + " docunents into the " + this.obj.schema[index].name + " collection");
+                            console.log("\u2514\u2500\u2500 Successfully indexed " + dataAtIndex.length + " docunents into the " + this.json[i].collection + " collection");
                         }
                         else {
-                            console.log("\u251C\u2500\u2500 Successfully indexed " + dataAtIndex.length + " docunents into the " + this.obj.schema[index].name + " collection");
+                            console.log("\u251C\u2500\u2500 Successfully indexed " + dataAtIndex.length + " docunents into the " + this.json[i].collection + " collection");
                         }
                         return [3 /*break*/, 3];
                     case 2:
-                        error_1 = _a.sent();
-                        console.log(error_1);
-                        for (i = 0; i < error_1.importResults.length; i++) {
-                            if (error_1.importResults[i].success === false) {
-                                console.log("Error With Document: " + error_1.importResults[i].error);
+                        error_2 = _a.sent();
+                        console.log(error_2);
+                        for (i_1 = 0; i_1 < error_2.importResults.length; i_1++) {
+                            if (error_2.importResults[i_1].success === false) {
+                                console.log("Error With Document: " + error_2.importResults[i_1].error);
                             }
                         }
                         return [3 /*break*/, 3];
@@ -228,26 +307,13 @@ var application = /** @class */ (function () {
             });
         });
     };
-    application.prototype.createCollection = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var error_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.client.collections().create(this.schemasObj.forumSchema)];
-                    case 1:
-                        _a.sent();
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_2 = _a.sent();
-                        console.log(error_2);
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    };
+    // public async createCollection() {
+    //   try {
+    //     await this.client.collections().create(this.schemas.forum);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
     /**
      * counts the number of successfully indexed documents
      * @param indexedData array of all successfully indexed documents
@@ -341,18 +407,13 @@ var application = /** @class */ (function () {
     /**
      * Returns a list of all the available schemas.
      */
-    application.prototype.schemaList = function () {
-        console.log("\n    {\n      " + JSON.stringify(this.schemasObj, null, "   ") + ",\n    }\n    ");
-    };
-    /**
-     * Interprits the provided arrays of stings and ties them to the instancs of the class
-     * will throw an error if the provided shemas and data sets dont match properties of the class.
-     * @param schemaArray passed trought from .indexData()
-     * @param dataArray passed through from .indexData()
-     */
-    application.prototype.processInput = function (p) {
-        console.log(p);
-    };
+    // public schemaList() {
+    //   console.log(`
+    //   {
+    //     ${JSON.stringify(this.schemasObj, null, "   ")},
+    //   }
+    //   `);
+    // }
     /**
      * Creates a new api key
      * If no arguments are passed then a search only key will be made that can search across all collections.
