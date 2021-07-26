@@ -1,6 +1,6 @@
 {
   "name": "typesense-cli",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Typesense js CLI adaptor",
   "main": "src/index.js",
   "bin": {
@@ -10,7 +10,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "cd src && node index.js"
+    "test": "node link"
   },
   "keywords": [
     "Typesense",

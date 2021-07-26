@@ -1,7 +1,12 @@
 const inquirer = require("inquirer");
+const settings = require("../vars/settings.json");
+const title = require("./display_title");
 
 module.exports = {
-  askInitQuestions: () => {
+  nodeSettings: () => {
+    if (settings.displayTitle) {
+      title.title();
+    }
     const questions = [
       {
         name: "host",
