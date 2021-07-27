@@ -1,20 +1,20 @@
 const fs = require("fs").promises;
-const f = require("./file");
+const f = require("./dirs");
 
 module.exports = {
   node: (r) => {
-    let file = `${f.getCurrentDirectoryPath()}/vars/serverNode.json`;
+    let file = `${f.getCurrentDirectoryPath}/vars/settings.json`;
     fs.readFile(file)
       .then((body) => JSON.parse(body))
       .then((json) => {
-        json.nodes = [];
+        json.serverNode.nodes = [];
         let n = {
           host: r.host,
           port: r.port,
           protocol: r.protocol,
         };
-        json.nodes.push(n);
-        json.apiKey = r.apiKey;
+        json.serverNode.nodes.push(n);
+        json.serverNode.apiKey = r.apiKey;
         return json;
       })
       .then((json) => JSON.stringify(json))

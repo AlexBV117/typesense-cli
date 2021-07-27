@@ -10,7 +10,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "node link"
+    "typesense-cli": "node src/setup.js"
   },
   "keywords": [
     "Typesense",

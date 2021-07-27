@@ -1,6 +1,6 @@
 "use strict";
 const typesense = require("typesense");
-const file = require("./file");
+const file = require("./dirs");
 
 export class application {
   private node = require("../vars/settings.json");

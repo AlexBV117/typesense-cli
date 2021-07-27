@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.application = void 0;
 var typesense = require("typesense");
-var file = require("./file");
+var file = require("./dirs");
 var application = /** @class */ (function () {
     function application() {
         this.schemas = require("../vars/schemas.json");
@@ -206,8 +206,7 @@ var application = /** @class */ (function () {
         this.client.keys(id).delete();
     };
     application.prototype.getSchemas = function () {
-        var r = JSON.parse(this.schemas);
-        console.log(r);
+        console.log(JSON.stringify(this.schemas, null, "  "));
     };
     return application;
 }());

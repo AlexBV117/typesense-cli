@@ -1,6 +1,6 @@
 "use strict";
 const typesense = require("typesense");
-const file = require("./file");
+const file = require("./dirs");
 
 export class application {
   private schemas = require("../vars/schemas.json");
@@ -113,7 +113,6 @@ export class application {
   }
 
   public getSchemas() {
-    let r = JSON.parse(this.schemas);
-    console.log(r);
+    console.log(JSON.stringify(this.schemas, null, "  "));
   }
 }

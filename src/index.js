@@ -2,9 +2,11 @@ const i = require("./modules/indexData");
 const a = require("./modules/serverManagement");
 const inq = require("./modules/changeNodeSettings");
 const arg = require("arg");
+const vars = require("./modules/updateSettings");
+const d = require("./modules/dirs");
 const index = new i.application();
 const other = new a.application();
-export function cli(args) {
+export async function cli(args) {
   const x = arg({
     "--schemas": Boolean,
     "--help": Boolean,
@@ -31,9 +33,11 @@ export function cli(args) {
     other.getSchemas();
   }
   if (x["--version"]) {
+    d.getDirectoryPath();
   }
   if (x["--serv"]) {
-    inq.nodeSettings();
+    let r = await inq.nodeSettings();
+    vars.node(r);
   }
   if (x["--help"]) {
   }

@@ -8,4 +8,8 @@ module.exports = {
   directoryExists: (filePath) => {
     return fs.existsSync(filePath);
   },
+  getDirectoryPath: () => {
+    console.log(path.parse(process.cwd()));
+    // process.chdir("home");
+  },
 };
