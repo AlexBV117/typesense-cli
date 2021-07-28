@@ -41,8 +41,9 @@ var typesense = require("typesense");
 var file = require("./dirs");
 var application = /** @class */ (function () {
     function application() {
-        this.schemas = require("../vars/schemas.json");
-        this.node = require("../vars/settings.json");
+        this.h = process.env.HOME;
+        this.node = require(this.h + "/.typesense-cli/typesense-cli.config.json");
+        this.schemas = require(this.h + "/.typesense-cli/schemas.json");
         this.client = new typesense.Client(this.node.serverNode);
     }
     /**

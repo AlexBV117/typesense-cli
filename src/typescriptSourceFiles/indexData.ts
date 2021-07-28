@@ -3,8 +3,9 @@ const typesense = require("typesense");
 const file = require("./dirs");
 
 export class application {
-  private node = require("../vars/settings.json");
-  private schemas = require("../vars/schemas.json");
+  private h = process.env.HOME;
+  private node = require(this.h + "/.typesense-cli/typesense-cli.config.json");
+  private schemas = require(this.h + "/.typesense-cli/schemas.json");
   private start_time: any;
   private finish_time: any;
   private json: any;
@@ -61,6 +62,9 @@ export class application {
   }
 
   private async refreshSchemas() {
+    if (this.json.length === undefined) {
+      throw new Error("Expected args for --index are [string]");
+    }
     for (let i = 0; i < this.json.length; i++) {
       if (this.alreadyACollection(i)) {
         console.log(`Refreshing ${this.json[i].collection} collection:`);

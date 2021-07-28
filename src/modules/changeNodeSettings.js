@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
-const settings = require("../vars/settings.json");
+const settings = require(process.env.HOME +
+  "/.typesense-cli/typesense-cli.config.json");
 const title = require("./display_title");
 
 module.exports = {

@@ -3,8 +3,9 @@ const typesense = require("typesense");
 const file = require("./dirs");
 
 export class application {
-  private schemas = require("../vars/schemas.json");
-  private node = require("../vars/settings.json");
+  private h = process.env.HOME;
+  private node = require(this.h + "/.typesense-cli/typesense-cli.config.json");
+  private schemas = require(this.h + "/.typesense-cli/schemas.json");
   private client = new typesense.Client(this.node.serverNode);
   /**
    *   This will return all the collections available on the typesense server.

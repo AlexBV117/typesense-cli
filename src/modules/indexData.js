@@ -41,8 +41,9 @@ var typesense = require("typesense");
 var file = require("./dirs");
 var application = /** @class */ (function () {
     function application() {
-        this.node = require("../vars/settings.json");
-        this.schemas = require("../vars/schemas.json");
+        this.h = process.env.HOME;
+        this.node = require(this.h + "/.typesense-cli/typesense-cli.config.json");
+        this.schemas = require(this.h + "/.typesense-cli/schemas.json");
         this.finalResult = [];
         this.client = new typesense.Client(this.node.serverNode);
     }
@@ -104,6 +105,9 @@ var application = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        if (this.json.length === undefined) {
+                            throw new Error("Expected args for --index are [string]");
+                        }
                         i = 0;
                         _b.label = 1;
                     case 1:

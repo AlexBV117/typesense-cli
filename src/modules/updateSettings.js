@@ -3,7 +3,7 @@ const f = require("./dirs");
 
 module.exports = {
   node: (r) => {
-    let file = `${f.getCurrentDirectoryPath}/vars/settings.json`;
+    let file = process.env.HOME + "/.typesense-cli/typesense-cli.config.json";
     fs.readFile(file)
       .then((body) => JSON.parse(body))
       .then((json) => {

@@ -1,9 +1,9 @@
 const i = require("./modules/indexData");
 const a = require("./modules/serverManagement");
 const inq = require("./modules/changeNodeSettings");
-const arg = require("arg");
 const vars = require("./modules/updateSettings");
 const d = require("./modules/dirs");
+const arg = require("arg");
 const index = new i.application();
 const other = new a.application();
 export async function cli(args) {
