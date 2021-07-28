@@ -117,7 +117,7 @@ export class application {
         } else {
           last = false;
         }
-        let chunkSize = 10000;
+        let chunkSize = this.node.chunckSize;
         let data = require(this.json[i].data[i2]);
         if (data.length < chunkSize) {
           await this.indexToCollections(i, data, last);

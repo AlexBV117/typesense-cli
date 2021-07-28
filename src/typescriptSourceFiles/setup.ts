@@ -28,21 +28,7 @@ class createEnvironment {
     let z = {
       automatic: {
         name: "automatic",
-        fields: [
-          { name: ".*", type: "auto" },
-          { name: "title", type: "string", facet: true },
-        ],
-      },
-      forum: {
-        name: "forum",
-        fields: [
-          { name: "docType", type: "string" },
-          { name: "url", type: "string" },
-          { name: "body", type: "string" },
-          { name: "title", type: "string" },
-          { name: "reply", type: "bool" },
-          { name: "date", type: "int32" },
-        ],
+        fields: [{ name: ".*", type: "auto" }],
       },
     };
     this.schemas = JSON.stringify(z);

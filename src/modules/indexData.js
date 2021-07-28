@@ -204,7 +204,7 @@ var application = /** @class */ (function () {
                         else {
                             last = false;
                         }
-                        chunkSize = 10000;
+                        chunkSize = this.node.chunckSize;
                         data = require(this.json[i].data[i2]);
                         if (!(data.length < chunkSize)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.indexToCollections(i, data, last)];
