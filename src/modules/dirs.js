@@ -10,6 +10,5 @@ module.exports = {
   },
   getDirectoryPath: () => {
     console.log(path.parse(process.cwd()));
-    // process.chdir("home");
   },
 };

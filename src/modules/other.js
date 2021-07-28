@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.application = void 0;
 var typesense = require("typesense");
-var file = require("./dirs");
+var fs = require("fs");
 var application = /** @class */ (function () {
     function application() {
         this.h = process.env.HOME;
@@ -92,90 +92,40 @@ var application = /** @class */ (function () {
      */
     application.prototype.deleteCollection = function (collection) {
         return __awaiter(this, void 0, void 0, function () {
-            var i, error_1;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        i = 0;
-                        _a.label = 1;
-                    case 1:
-                        if (!(i < collection.length)) return [3 /*break*/, 7];
-                        _a.label = 2;
-                    case 2:
-                        _a.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, this.client.collections(collection[i]).delete()];
-                    case 3:
-                        _a.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
-                        error_1 = _a.sent();
-                        console.log(error_1);
-                        return [3 /*break*/, 5];
-                    case 5:
-                        console.log(collection[i] + " deleted");
-                        _a.label = 6;
-                    case 6:
-                        i++;
-                        return [3 /*break*/, 1];
-                    case 7: return [2 /*return*/];
+                try {
+                    this.client.collections(collection).delete();
+                    console.log(collection + " deleted");
                 }
+                catch (error) {
+                    console.log(error);
+                }
+                return [2 /*return*/];
             });
         });
     };
-    /**
-     * Returns a list of all the available schemas.
-     */
-    // public schemaList() {
-    //   console.log(`
-    //   {
-    //     ${JSON.stringify(this.schemasObj, null, "   ")},
-    //   }
-    //   `);
-    // }
-    /**
-     * Creates a new api key
-     * If no arguments are passed then a search only key will be made that can search across all collections.
-     * Only give search only keys to the client.
-     * The Full API key is only given when it is created so make a note of it somewhere.
-     * @param description Internal description to identify what the key is for
-     * @param isAdmin If true then a new admin key will be created, If false the key is only allowed to make search requests.
-     * @param collections A lsit of all collections that the key can access
-     */
-    application.prototype.makeKey = function (description, isAdmin, collections) {
+    application.prototype.makeKey = function (x) {
         return __awaiter(this, void 0, void 0, function () {
-            var privileges, cols, newKey, error_2;
+            var json, newKey, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        privileges = [];
-                        cols = [];
-                        if (isAdmin) {
-                            privileges.push("*");
-                        }
-                        else {
-                            privileges.push("documents:search");
-                        }
-                        if (collections) {
-                            cols = collections;
-                        }
-                        else {
-                            cols.push("*");
-                        }
+                        json = JSON.parse(x);
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, this.client.keys().create({
-                                description: description,
-                                actions: privileges,
-                                collections: cols,
+                                description: json.description,
+                                actions: json.actions,
+                                collections: json.collections,
                             })];
                     case 2:
                         newKey = _a.sent();
                         console.log(newKey);
                         return [3 /*break*/, 4];
                     case 3:
-                        error_2 = _a.sent();
-                        console.log(error_2);
+                        error_1 = _a.sent();
+                        console.log(error_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -203,11 +153,32 @@ var application = /** @class */ (function () {
      * Deletes a specific API key
      * @param id The ID of the key you want to remove. Use .getKeys() to get the key id
      */
-    application.prototype.removeKey = function (id) {
-        this.client.keys(id).delete();
+    application.prototype.removeKey = function (arg) {
+        var id = arg.split(" ");
+        for (var _i = 0, id_1 = id; _i < id_1.length; _i++) {
+            var ids = id_1[_i];
+            this.client.keys(ids).delete();
+            console.log("key: " + ids + " deleted");
+        }
     };
     application.prototype.getSchemas = function () {
         console.log(JSON.stringify(this.schemas, null, "  "));
+    };
+    application.prototype.version = function () {
+        var pack = require("../../package.json");
+        console.log("Version: " + pack.version);
+    };
+    application.prototype.help = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                fs.readFile("../../help.txt", "utf8", function (err, data) {
+                    if (err)
+                        throw err;
+                    console.log(data);
+                });
+                return [2 /*return*/];
+            });
+        });
     };
     return application;
 }());
