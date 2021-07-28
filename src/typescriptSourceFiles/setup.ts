@@ -1,3 +1,5 @@
+import { O_CREAT } from "constants";
+
 let fs = require("fs");
 let fsPromises = require("fs").promises;
 let i = require("./modules/changeNodeSettings");
@@ -5,6 +7,7 @@ let i = require("./modules/changeNodeSettings");
 class createEnvironment {
   private settings: any;
   private schemas: any;
+  private home = process.env.HOME;
 
   private async createContent() {
     let x = await i.nodeSettings();
@@ -49,51 +52,64 @@ class createEnvironment {
   public async createFiles() {
     await this.createContent();
     fsPromises
-      .mkdir(process.env.HOME + "/.typesense-cli", { recursive: true })
-      .then((error) => {
-        if (error) throw error;
+      .mkdir(this.home + "/.typesense-cli", { recursive: true }, (err) => {
+        if (err) throw err;
+      })
+      .then(async () => {
         console.log(
           "New directory .typesense-cli created in the home directory"
         );
         fsPromises
           .writeFile(
-            process.env.HOME + "/.typesense-cli/typesense-cli.config.json",
-            this.settings
+            this.home + "/.typesense-cli/typesense-cli.config.json",
+            this.settings,
+            (err) => {
+              if (err) throw err;
+            }
           )
-          .then(async (error) => {
-            if (error) throw error;
+          .then(async () => {
             console.log(
               "typesense-cli.config.json successfully created in .typesense-cli"
             );
-            let set = await fsPromises.open(
-              process.env.HOME + "/.typesense-cli/typesense-cli.config.json",
-              "r"
-            );
-            fs.fchmod(set.fd, 0o777, (err) => {
-              if (err) throw err;
-              console.log(
-                "permissions for typesense-cli.config.json updated to rwx for all users"
+            try {
+              let set = await fsPromises.open(
+                this.home + "/.typesense-cli/typesense-cli.config.json",
+                "r"
               );
-            });
+              fs.fchmod(set.fd, 0o777, (err) => {
+                if (err) throw err;
+                console.log(
+                  "permissions for typesense-cli.config.json updated to rwx for all users"
+                );
+              });
+            } catch (error) {
+              console.log(error);
+            }
           });
         fsPromises
           .writeFile(
-            process.env.HOME + "/.typesense-cli/schemas.json",
-            this.schemas
-          )
-          .then(async (error) => {
-            if (error) throw error;
-            console.log("schemas.json successfully created in .typesense-cli");
-            let sch = await fsPromises.open(
-              process.env.HOME + "/.typesense-cli/schemas.json",
-              "r"
-            );
-            fs.fchmod(sch.fd, 0o777, (err) => {
+            this.home + "/.typesense-cli/schemas.json",
+            this.schemas,
+            (err) => {
               if (err) throw err;
-              console.log(
-                "permissions for schemas.json updated to rwx for all users"
+            }
+          )
+          .then(async () => {
+            console.log("schemas.json successfully created in .typesense-cli");
+            try {
+              let sch = await fsPromises.open(
+                this.home + "/.typesense-cli/schemas.json",
+                "r"
               );
-            });
+              fs.fchmod(sch.fd, 0o777, (err) => {
+                if (err) throw err;
+                console.log(
+                  "permissions for schemas.json updated to rwx for all users"
+                );
+              });
+            } catch (error) {
+              console.log(error);
+            }
           });
       });
   }
