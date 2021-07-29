@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var fs = require("fs");
 var fsPromises = require("fs").promises;
-var i = require("./modules/changeNodeSettings");
+var i = require("../modules/inquire");
 var createEnvironment = /** @class */ (function () {
     function createEnvironment() {
         this.home = process.env.HOME;
