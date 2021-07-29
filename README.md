@@ -8,9 +8,13 @@ clone repo:
 ```sh
 git clone https://github.com/AlexBV117/typesense-cli.git
 ```
-and then run:
+then run:
 ```sh
 npm run typesense-cli
+```
+finally run in the typesense-cli directory:
+```sh
+npm link
 ```
 # List of Commands: 
 
