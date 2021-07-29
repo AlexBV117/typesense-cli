@@ -10,7 +10,7 @@
     "access": "public"
   },
   "scripts": {
-    "typesense-cli": "npm install && npm link && node src/setup.js"
+    "typesense-cli": "npm install && node src/setup.js"
   },
   "keywords": [
     "Typesense",
