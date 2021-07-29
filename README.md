@@ -4,6 +4,8 @@ Welcome to Typesense-CLI;
 
 Typesnese cli is a node js application that aims to improve the back-end management of your self-hosted typesense server. It utilizes the [typesense-js](https://github.com/typesense/typesense-js) client library to achieve its functionality.
 
+# Getting Started
+
 clone repo:
 ```sh
 git clone https://github.com/AlexBV117/typesense-cli.git
@@ -12,10 +14,18 @@ then run:
 ```sh
 npm run typesense-cli
 ```
-finally run in the typesense-cli directory:
+This will install dependencies and do the initialization
+
+If you want to be able to call the cli from anywhere using `typesense`
+you will need to add typesense to your path. Otherwise, you will have to use `./bin/typesense`
+in the typesense-cli directory. 
+
+Or you can use 
 ```sh
 npm link
 ```
+However, this often needs to be run as sudo
+
 # List of Commands: 
 
 --help,          -h:      prints the help message
