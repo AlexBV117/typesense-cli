@@ -1,6 +1,6 @@
 let fs = require("fs");
 let fsPromises = require("fs").promises;
-let i = require("./../modules/inquire");
+let i = require("./modules/inquire");
 
 class createEnvironment {
   private settings: any;
