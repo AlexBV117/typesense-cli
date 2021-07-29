@@ -36,18 +36,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.application = void 0;
+exports.other = exports.index = void 0;
 var typesense = require("typesense");
 var file = require("./dirs");
-var application = /** @class */ (function () {
-    function application() {
-        this.h = process.env.HOME;
-        this.node = require(this.h + "/.typesense-cli/typesense-cli.config.json");
-        this.schemas = require(this.h + "/.typesense-cli/schemas.json");
+var fs = require("fs");
+var h = process.env.HOME;
+var node = require(h + "/.typesense-cli/typesense-cli.config.json");
+var schemas = require(h + "/.typesense-cli/schemas.json");
+var client = new typesense.Client(node.serverNode);
+var index = /** @class */ (function () {
+    function index() {
         this.finalResult = [];
-        this.client = new typesense.Client(this.node.serverNode);
     }
-    application.prototype.indexData = function (p) {
+    index.prototype.indexData = function (p) {
         return __awaiter(this, void 0, void 0, function () {
             var results;
             return __generator(this, function (_a) {
@@ -76,20 +77,20 @@ var application = /** @class */ (function () {
             });
         });
     };
-    application.prototype.inputValidation = function () {
+    index.prototype.inputValidation = function () {
         if (this.schemasExist()) {
             this.dataExists();
         }
     };
-    application.prototype.schemasExist = function () {
+    index.prototype.schemasExist = function () {
         for (var i = 0; i < this.json.length; i++) {
-            if (!this.schemas[this.json[i].collection]) {
+            if (!schemas[this.json[i].collection]) {
                 throw new Error("\"" + this.json[i].collection + "\" is not a known collection!!!");
             }
         }
         return true;
     };
-    application.prototype.dataExists = function () {
+    index.prototype.dataExists = function () {
         for (var i = 0; i < this.json.length; i++) {
             for (var i2 = 0; i2 < this.json[i].data.length; i2++) {
                 if (!file.directoryExists(this.json[i].data[i2])) {
@@ -99,7 +100,7 @@ var application = /** @class */ (function () {
         }
         return true;
     };
-    application.prototype.refreshSchemas = function () {
+    index.prototype.refreshSchemas = function () {
         return __awaiter(this, void 0, void 0, function () {
             var i, _a, error_1;
             return __generator(this, function (_b) {
@@ -117,13 +118,11 @@ var application = /** @class */ (function () {
                         _b.label = 2;
                     case 2:
                         _b.trys.push([2, 5, , 6]);
-                        return [4 /*yield*/, this.client.collections(this.json[i].collection).delete()];
+                        return [4 /*yield*/, client.collections(this.json[i].collection).delete()];
                     case 3:
                         _b.sent();
                         console.log("\u251C\u2500\u2500 Old " + this.json[i].collection + " collection deleted");
-                        return [4 /*yield*/, this.client
-                                .collections()
-                                .create(this.schemas[this.json[i].collection])];
+                        return [4 /*yield*/, client.collections().create(schemas[this.json[i].collection])];
                     case 4:
                         _b.sent();
                         console.log("\u2514\u2500\u2500 New " + this.json[i].collection + " collection created");
@@ -140,9 +139,7 @@ var application = /** @class */ (function () {
                         _b.label = 8;
                     case 8:
                         _b.trys.push([8, 10, , 11]);
-                        return [4 /*yield*/, this.client
-                                .collections()
-                                .create(this.schemas[this.json[i].collection])];
+                        return [4 /*yield*/, client.collections().create(schemas[this.json[i].collection])];
                     case 9:
                         _b.sent();
                         console.log("\u2514\u2500\u2500 " + this.json[i].collection + " collection created");
@@ -159,7 +156,7 @@ var application = /** @class */ (function () {
             });
         });
     };
-    application.prototype.alreadyACollection = function (i) {
+    index.prototype.alreadyACollection = function (i) {
         for (var i2 = 0; i2 < this.collection.length; i2++) {
             if (this.collection[i2].name === this.json[i].collection) {
                 return true;
@@ -167,14 +164,14 @@ var application = /** @class */ (function () {
         }
         return false;
     };
-    application.prototype.getCol = function () {
+    index.prototype.getCol = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = this;
-                        return [4 /*yield*/, this.client.collections().retrieve()];
+                        return [4 /*yield*/, client.collections().retrieve()];
                     case 1:
                         _a.collection = _b.sent();
                         return [2 /*return*/];
@@ -182,7 +179,7 @@ var application = /** @class */ (function () {
             });
         });
     };
-    application.prototype.chunkData = function () {
+    index.prototype.chunkData = function () {
         return __awaiter(this, void 0, void 0, function () {
             var i, i2, last, chunkSize, data, ret;
             return __generator(this, function (_a) {
@@ -204,7 +201,7 @@ var application = /** @class */ (function () {
                         else {
                             last = false;
                         }
-                        chunkSize = this.node.chunckSize;
+                        chunkSize = node.chunckSize;
                         data = require(this.json[i].data[i2]);
                         if (!(data.length < chunkSize)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.indexToCollections(i, data, last)];
@@ -233,7 +230,7 @@ var application = /** @class */ (function () {
             });
         });
     };
-    application.prototype.timeTaken = function () {
+    index.prototype.timeTaken = function () {
         var time = this.finish_time - this.start_time;
         var response;
         var x;
@@ -248,14 +245,14 @@ var application = /** @class */ (function () {
             return response;
         }
     };
-    application.prototype.indexToCollections = function (i, dataAtIndex, last) {
+    index.prototype.indexToCollections = function (i, dataAtIndex, last) {
         return __awaiter(this, void 0, void 0, function () {
             var returned, failed, error_2, i_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.client
+                        return [4 /*yield*/, client
                                 .collections(this.json[i].collection)
                                 .documents()
                                 .import(dataAtIndex)];
@@ -287,7 +284,7 @@ var application = /** @class */ (function () {
             });
         });
     };
-    application.prototype.getNumberOfIndexed = function (indexedData) {
+    index.prototype.getNumberOfIndexed = function (indexedData) {
         var dataSet = indexedData.length;
         var count = 0;
         for (var i = 0; i < dataSet; i++) {
@@ -296,6 +293,114 @@ var application = /** @class */ (function () {
         }
         return count;
     };
-    return application;
+    return index;
 }());
-exports.application = application;
+exports.index = index;
+var other = /** @class */ (function () {
+    function other() {
+    }
+    other.prototype.collections = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var collections;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, client.collections().retrieve()];
+                    case 1:
+                        collections = _a.sent();
+                        console.log(collections);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    other.prototype.deleteCollection = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var collections, _i, collections_1, collection;
+            return __generator(this, function (_a) {
+                collections = args.split(" ");
+                for (_i = 0, collections_1 = collections; _i < collections_1.length; _i++) {
+                    collection = collections_1[_i];
+                    try {
+                        client.collections(collection).delete();
+                        console.log(collection + " deleted");
+                    }
+                    catch (error) {
+                        console.log(error);
+                    }
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    other.prototype.makeKey = function (x) {
+        return __awaiter(this, void 0, void 0, function () {
+            var json, newKey, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        json = JSON.parse(x);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, client.keys().create({
+                                description: json.description,
+                                actions: json.actions,
+                                collections: json.collections,
+                            })];
+                    case 2:
+                        newKey = _a.sent();
+                        console.log(newKey);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_3 = _a.sent();
+                        console.log(error_3);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    other.prototype.getKeys = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var key;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, client.keys().retrieve()];
+                    case 1:
+                        key = _a.sent();
+                        console.log(JSON.stringify(key, null, "  "));
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    other.prototype.removeKey = function (arg) {
+        var id = arg.split(" ");
+        for (var _i = 0, id_1 = id; _i < id_1.length; _i++) {
+            var ids = id_1[_i];
+            client.keys(ids).delete();
+            console.log("key: " + ids + " deleted");
+        }
+    };
+    other.prototype.getSchemas = function () {
+        console.log(JSON.stringify(schemas, null, "  "));
+    };
+    other.prototype.version = function () {
+        var pack = require("../../package.json");
+        console.log("Version: " + pack.version);
+    };
+    other.prototype.help = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                fs.readFile(h + "/.typesense-cli/help.txt", "utf8", function (err, data) {
+                    if (err)
+                        throw err;
+                    console.log(data);
+                });
+                return [2 /*return*/];
+            });
+        });
+    };
+    return other;
+}());
+exports.other = other;

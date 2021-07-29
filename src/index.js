@@ -1,17 +1,15 @@
-const i = require("./modules/indexData");
-const a = require("./modules/other");
-const inq = require("./modules/changeNodeSettings");
-const vars = require("./modules/updateSettings");
-const d = require("./modules/dirs");
+const i = require("./modules/cmdFunctions");
+const inq = require("./modules/inquire");
+const update = require("./modules/updateSettings");
 const arg = require("arg");
-const index = new i.application();
-const other = new a.application();
+const index = new i.index();
+const other = new i.other();
 export async function cli(args) {
   const x = arg({
     "--schemas": Boolean,
     "--help": Boolean,
     "--version": Boolean,
-    "--serverNode": Boolean,
+    "--server": Boolean,
     "--collections": Boolean,
     "--key": Boolean,
     "--index": String,
@@ -36,9 +34,9 @@ export async function cli(args) {
   if (x["--version"]) {
     other.version();
   }
-  if (x["--serverNode"]) {
+  if (x["--server"]) {
     let r = await inq.nodeSettings();
-    vars.node(r);
+    update.node(r);
   }
   if (x["--help"]) {
     other.help();

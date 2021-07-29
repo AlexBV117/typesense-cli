@@ -1,17 +1,18 @@
 "use strict";
 const typesense = require("typesense");
 const file = require("./dirs");
+const fs = require("fs");
+const h = process.env.HOME;
+const node = require(h + "/.typesense-cli/typesense-cli.config.json");
+const schemas = require(h + "/.typesense-cli/schemas.json");
+const client = new typesense.Client(node.serverNode);
 
-export class application {
-  private h = process.env.HOME;
-  private node = require(this.h + "/.typesense-cli/typesense-cli.config.json");
-  private schemas = require(this.h + "/.typesense-cli/schemas.json");
+export class index {
   private start_time: any;
   private finish_time: any;
   private json: any;
   private collection: any;
   private finalResult = [];
-  private client = new typesense.Client(this.node.serverNode);
 
   public async indexData(p) {
     this.start_time = new Date();
@@ -39,7 +40,7 @@ export class application {
 
   private schemasExist() {
     for (let i = 0; i < this.json.length; i++) {
-      if (!this.schemas[this.json[i].collection]) {
+      if (!schemas[this.json[i].collection]) {
         throw new Error(
           `"${this.json[i].collection}" is not a known collection!!!`
         );
@@ -69,11 +70,9 @@ export class application {
       if (this.alreadyACollection(i)) {
         console.log(`Refreshing ${this.json[i].collection} collection:`);
         try {
-          await this.client.collections(this.json[i].collection).delete();
+          await client.collections(this.json[i].collection).delete();
           console.log(`├── Old ${this.json[i].collection} collection deleted`);
-          await this.client
-            .collections()
-            .create(this.schemas[this.json[i].collection]);
+          await client.collections().create(schemas[this.json[i].collection]);
           console.log(`└── New ${this.json[i].collection} collection created`);
         } catch {
           (error) => {
@@ -83,9 +82,7 @@ export class application {
       } else {
         console.log(`Creating the ${this.json[i].collection} collection:`);
         try {
-          await this.client
-            .collections()
-            .create(this.schemas[this.json[i].collection]);
+          await client.collections().create(schemas[this.json[i].collection]);
           console.log(`└── ${this.json[i].collection} collection created`);
         } catch (error) {
           console.log(error);
@@ -104,7 +101,7 @@ export class application {
   }
 
   private async getCol() {
-    this.collection = await this.client.collections().retrieve();
+    this.collection = await client.collections().retrieve();
   }
 
   private async chunkData() {
@@ -117,7 +114,7 @@ export class application {
         } else {
           last = false;
         }
-        let chunkSize = this.node.chunckSize;
+        let chunkSize = node.chunckSize;
         let data = require(this.json[i].data[i2]);
         if (data.length < chunkSize) {
           await this.indexToCollections(i, data, last);
@@ -153,7 +150,7 @@ export class application {
     last: boolean
   ) {
     try {
-      const returned = await this.client
+      const returned = await client
         .collections(this.json[i].collection)
         .documents()
         .import(dataAtIndex);
@@ -189,5 +186,67 @@ export class application {
       count += setLength;
     }
     return count;
+  }
+}
+
+export class other {
+  public async collections() {
+    let collections = await client.collections().retrieve();
+    console.log(collections);
+  }
+
+  public async deleteCollection(args: string) {
+    let collections = args.split(" ");
+    for (let collection of collections) {
+      try {
+        client.collections(collection).delete();
+        console.log(collection + " deleted");
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  public async makeKey(x) {
+    let json = JSON.parse(x);
+    try {
+      let newKey = await client.keys().create({
+        description: json.description,
+        actions: json.actions,
+        collections: json.collections,
+      });
+      console.log(newKey);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  public async getKeys() {
+    let key = await client.keys().retrieve();
+    console.log(JSON.stringify(key, null, "  "));
+  }
+
+  public removeKey(arg: string) {
+    let id = arg.split(" ");
+    for (let ids of id) {
+      client.keys(ids).delete();
+      console.log(`key: ${ids} deleted`);
+    }
+  }
+
+  public getSchemas() {
+    console.log(JSON.stringify(schemas, null, "  "));
+  }
+
+  public version() {
+    let pack = require("../../package.json");
+    console.log(`Version: ${pack.version}`);
+  }
+
+  public async help() {
+    fs.readFile(h + "/.typesense-cli/help.txt", "utf8", (err, data) => {
+      if (err) throw err;
+      console.log(data);
+    });
   }
 }

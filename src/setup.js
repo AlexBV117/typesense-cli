@@ -42,6 +42,7 @@ var i = require("./modules/changeNodeSettings");
 var createEnvironment = /** @class */ (function () {
     function createEnvironment() {
         this.home = process.env.HOME;
+        this.help = "Welcome to Typesense-cli!!! \n\n  List of Commands: \n  \n  --help          -h      prints this message;\n  --index         -i      Indexes documents into a collection;\n  --schemas       -s      returns out the list of defined schemas in ~/.typesense-cli/schemas.json file;\n  --version       -v      returns the version of typesense-cli that you are running;\n  --server        n/a     allows you to update the server node that the cli will use;\n  --collections   -c      returns the collections on the server;\n  --key           -k      returns the active Api keys;\n  --new           -n      append to either --keys to create a new api keys;\n  --remove        -r      append to either --keys or --collections and will remove all keys or collections passed;\n  \n  for more information on these commands and how to structure arguments please see the README.md \n  in the typesense-cli repo.\n  ";
     }
     createEnvironment.prototype.createContent = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -68,21 +69,7 @@ var createEnvironment = /** @class */ (function () {
                         z = {
                             automatic: {
                                 name: "automatic",
-                                fields: [
-                                    { name: ".*", type: "auto" },
-                                    { name: "title", type: "string", facet: true },
-                                ],
-                            },
-                            forum: {
-                                name: "forum",
-                                fields: [
-                                    { name: "docType", type: "string" },
-                                    { name: "url", type: "string" },
-                                    { name: "body", type: "string" },
-                                    { name: "title", type: "string" },
-                                    { name: "reply", type: "bool" },
-                                    { name: "date", type: "int32" },
-                                ],
+                                fields: [{ name: ".*", type: "auto" }],
                             },
                         };
                         this.schemas = JSON.stringify(z);
@@ -109,6 +96,14 @@ var createEnvironment = /** @class */ (function () {
                             var _this = this;
                             return __generator(this, function (_a) {
                                 console.log("New directory .typesense-cli created in the home directory");
+                                fsPromises
+                                    .mkdir(this.home + "/.typesense-cli/data", { recursive: true }, function (err) {
+                                    if (err)
+                                        throw err;
+                                })
+                                    .then(function () {
+                                    console.log("New data directory created in .typesense-cli");
+                                });
                                 fsPromises
                                     .writeFile(this.home + "/.typesense-cli/typesense-cli.config.json", this.settings, function (err) {
                                     if (err)
@@ -171,6 +166,14 @@ var createEnvironment = /** @class */ (function () {
                                         }
                                     });
                                 }); });
+                                fsPromises
+                                    .writeFile(this.home + "/.typesense-cli/help.txt", this.help, function (err) {
+                                    if (err)
+                                        throw err;
+                                })
+                                    .then(function () {
+                                    console.log("help.txt successfully created in .typesense-cli");
+                                });
                                 return [2 /*return*/];
                             });
                         }); });

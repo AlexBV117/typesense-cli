@@ -1,13 +1,10 @@
 const inquirer = require("inquirer");
-const settings = require(process.env.HOME +
-  "/.typesense-cli/typesense-cli.config.json");
+
 const title = require("./display_title");
 
 module.exports = {
   nodeSettings: () => {
-    if (settings.displayTitle) {
-      title.title();
-    }
+    title.title();
     const questions = [
       {
         name: "host",
@@ -29,7 +26,7 @@ module.exports = {
       },
       {
         name: "apiKey",
-        type: "password",
+        type: "input",
         message: "API key (key type must be admin)",
         validate: (value) => {
           if (value.length) {

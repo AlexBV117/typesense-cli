@@ -1,6 +1,6 @@
 {
   "name": "typesense-cli",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Typesense js CLI adaptor",
   "main": "src/index.js",
   "bin": {
@@ -10,7 +10,7 @@
     "access": "public"
   },
   "scripts": {
-    "typesense-cli": "node src/setup.js"
+    "typesense-cli": "npm install && npm link && node src/setup.js"
   },
   "keywords": [
     "Typesense",
@@ -23,12 +23,9 @@
     "arg": "^5.0.0",
     "chalk": "^3.0.0",
     "clear": "^0.1.0",
-    "clui": "^0.3.6",
-    "configstore": "^5.0.0",
     "esm": "^3.2.25",
     "figlet": "^1.2.4",
     "inquirer": "^7.0.3",
-    "minimist": "^1.2.0",
     "typesense": "^0.13.0"
   },
   "devDependencies": {
