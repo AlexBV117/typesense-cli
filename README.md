@@ -63,7 +63,7 @@ typesense --keys -r "1 3 10"
 
 Running this command will remove the Api keys with id 1, 3, and 10.
 
-typesense --keys -n {"description": "admin key", "actions": ["*"], "collections": ["*"]}
+typesense --keys -n {"description": "admin key", "actions": ["\*"], "collections": ["\*"]}
 
 Running this command will create a new admin Api key. See [Typesense Docs](https://typesense.org/docs/0.20.0/api/api-keys.html) for more info on creating api keys
 NOTE: this command will return the full key to you at this point only so make a note of it somewhere.
