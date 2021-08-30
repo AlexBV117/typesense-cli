@@ -14,10 +14,27 @@ export class index {
   private collection: any;
   private finalResult = [];
 
-  public async indexData(p) {
-    this.start_time = new Date();
+  public async appendData(p) {
     this.json = JSON.parse(p);
     await this.getCol();
+    this.start_time = new Date();
+    console.log("Appending Data...\n");
+    this.inputValidation();
+    await this.chunkData();
+    let results =  await Promise.all(this.finalResult);
+    this.finish_time = new Date();
+    console.log(
+      `\nFinished Appendind data ${this.getNumberOfIndexed(
+        this.finalResult
+      ).toString()} documents into memory in ${this.timeTaken()}`
+    );
+    return results;
+  }
+
+  public async indexData(p) {
+    this.json = JSON.parse(p);
+    await this.getCol();
+    this.start_time = new Date();
     console.log("Staring Index...\n");
     this.inputValidation();
     await this.refreshSchemas();

@@ -15,6 +15,7 @@ export async function cli(args) {
     "--index": String,
     "--new": String,
     "--remove": String,
+    "--append": String,
     "-v": "--version",
     "-i": "--index",
     "-h": "--help",
@@ -23,6 +24,7 @@ export async function cli(args) {
     "-k": "--key",
     "-r": "--remove",
     "-n": "--new",
+    "-a": "--append"
   });
   if (x["--index"]) {
     let y = `[${x["--index"]}]`;
@@ -55,5 +57,9 @@ export async function cli(args) {
   }
   if (x["--collections"] && x["--remove"]) {
     other.deleteCollection(x["--remove"]);
+  }
+  if (x["--append"]){
+    let y = `[${x["--index"]}]`;
+    index.appendData(y)
   }
 }

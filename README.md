@@ -32,6 +32,8 @@ However, this often needs to be run as sudo
 
 --index,         -i:      Indexes documents into a collection. Can index to multiple collections with multiple data sets at a time
 
+--append         -a:      Indexes documents into a collection. However unlike --index it does not clear the preexisting collections
+
 --schemas,       -s:      returns out the list of defined schemas in ~/.typesense-cli/schemas.json file
 
 --version,       -v:      returns the version of typesense-cli that you are running
@@ -50,7 +52,7 @@ However, this often needs to be run as sudo
 # Command Examples:
 
 typesense --index=
-'{ "collection":"col1", "data":["example/path/to/data1.json", "example/path/data2.json"] }, { "collection":"col2", "data":[example/path/to/data3.json] }'
+'[{ "collection":"col1", "data":["example/path/to/data1.json", "example/path/data2.json"] }, { "collection":"col2", "data":["example/path/to/data3.json"] }]'
 
 Running this command will index data sets 1&2 into collection1 and data3 int collection2. It is important to note that everything between the '' must be valid
 json. The current operation of the --index command will clear all previously indexed documents in that collection. --append will be added later allowing you to
@@ -61,7 +63,7 @@ typesense --keys -r "1 3 10"
 
 Running this command will remove the Api keys with id 1, 3, and 10.
 
-typesense --keys -n {"description": "admin key", "actions": ["\*"], "collections": ["\*"]}
+typesense --keys -n {"description": "admin key", "actions": ["*"], "collections": ["*"]}
 
 Running this command will create a new admin Api key. See [Typesense Docs](https://typesense.org/docs/0.20.0/api/api-keys.html) for more info on creating api keys
 NOTE: this command will return the full key to you at this point only so make a note of it somewhere.

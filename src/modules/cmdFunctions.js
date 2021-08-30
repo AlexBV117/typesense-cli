@@ -48,17 +48,43 @@ var index = /** @class */ (function () {
     function index() {
         this.finalResult = [];
     }
+    index.prototype.appendData = function (p) {
+        return __awaiter(this, void 0, void 0, function () {
+            var results;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.json = JSON.parse(p);
+                        return [4 /*yield*/, this.getCol()];
+                    case 1:
+                        _a.sent();
+                        this.start_time = new Date();
+                        console.log("Appending Data...\n");
+                        this.inputValidation();
+                        return [4 /*yield*/, this.chunkData()];
+                    case 2:
+                        _a.sent();
+                        return [4 /*yield*/, Promise.all(this.finalResult)];
+                    case 3:
+                        results = _a.sent();
+                        this.finish_time = new Date();
+                        console.log("\nFinished Appendind data " + this.getNumberOfIndexed(this.finalResult).toString() + " documents into memory in " + this.timeTaken());
+                        return [2 /*return*/, results];
+                }
+            });
+        });
+    };
     index.prototype.indexData = function (p) {
         return __awaiter(this, void 0, void 0, function () {
             var results;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.start_time = new Date();
                         this.json = JSON.parse(p);
                         return [4 /*yield*/, this.getCol()];
                     case 1:
                         _a.sent();
+                        this.start_time = new Date();
                         console.log("Staring Index...\n");
                         this.inputValidation();
                         return [4 /*yield*/, this.refreshSchemas()];
