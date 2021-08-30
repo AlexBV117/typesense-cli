@@ -59,7 +59,7 @@ export async function cli(args) {
     other.deleteCollection(x["--remove"]);
   }
   if (x["--append"]){
-    let y = `[${x["--index"]}]`;
+    let y = `[${x["--append"]}]`;
     index.appendData(y)
   }
 }
