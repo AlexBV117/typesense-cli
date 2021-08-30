@@ -12,6 +12,7 @@ class createEnvironment {
   
   --help          -h      prints this message;
   --index         -i      Indexes documents into a collection;
+  --append        -a:     Indexes documents into a collection. However unlike --index it does not clear the preexisting collections;
   --schemas       -s      returns out the list of defined schemas in ~/.typesense-cli/schemas.json file;
   --version       -v      returns the version of typesense-cli that you are running;
   --server        n/a     allows you to update the server node that the cli will use;
