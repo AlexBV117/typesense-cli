@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
 require = require("esm")(module /* options */);
-require("../src/index").cli(process.argv);
+require("../src/Modules/main").run(process.argv);
