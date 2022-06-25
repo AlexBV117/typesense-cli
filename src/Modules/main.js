@@ -44,7 +44,6 @@ function run(args) {
         var tokens;
         return __generator(this, function (_a) {
             tokens = new Tokenizer_1.default(args);
-            tokens.printArgs();
             return [2 /*return*/];
         });
     });

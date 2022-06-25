@@ -1,0 +1,12 @@
+{
+	"serverNode": {
+		"nodes": [{
+			"host": "localhost",
+			"port": "9090",
+			"protocol": "http"
+		}],
+		"apiKey": "A2B4V5"
+	},
+	"chunckSize": 10000,
+	"displayTitle": true
+}
