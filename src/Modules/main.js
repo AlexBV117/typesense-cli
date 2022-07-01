@@ -38,12 +38,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = void 0;
-var Tokenizer_1 = require("./Tokenizer");
+var Parser_1 = require("./Parser");
 function run(args) {
     return __awaiter(this, void 0, void 0, function () {
         var tokens;
         return __generator(this, function (_a) {
-            tokens = new Tokenizer_1.default(args);
+            tokens = new Parser_1.default(args);
             return [2 /*return*/];
         });
     });
