@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.Operation = void 0;
 var Operation = /** @class */ (function () {
     function Operation() {

@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var Tokenizer = /** @class */ (function () {
     /**
      * Tokenizer Constructor Function
@@ -25,7 +25,7 @@ var Tokenizer = /** @class */ (function () {
                 name: []
             },
             keys: {
-                new: false,
+                "new": false,
                 remove: false,
                 actions: [],
                 collections: [],
@@ -33,12 +33,12 @@ var Tokenizer = /** @class */ (function () {
                 value: "",
                 expiresAt: "",
                 id: 0
-            },
+            }
         };
         this.commands = {
             index: {
                 regex: /^(--index)$|^(-i)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     that.processedArgs.index.index = true;
                     for (; that.index < that.args.length; that.index++) {
                         var currentArgument = that.args[that.index];
@@ -61,38 +61,38 @@ var Tokenizer = /** @class */ (function () {
             },
             append: {
                 regex: /^(--append)$|^(-a)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     that.processedArgs.index.append = true;
-                    that.commands.index.function(that);
+                    that.commands.index["function"](that);
                 }
             },
             schemas: {
                 regex: /^(--schemas)$|^(-s)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     that.processedArgs.schemas = true;
                 }
             },
             help: {
                 regex: /^(--help)$|^(-h)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     that.processedArgs.help = true;
                 }
             },
             version: {
                 regex: /^(--version)$|^(-v)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     that.processedArgs.version = true;
                 }
             },
             server: {
                 regex: /^(--server)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     that.processedArgs.server = true;
                 }
             },
             collections: {
                 regex: /^(--collections)$|^(-c)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     for (; that.index < that.args.length; that.index++) {
                         var currentArgument = that.args[that.index];
                         if (currentArgument.match(that.isFlagRegex)) {
@@ -106,7 +106,7 @@ var Tokenizer = /** @class */ (function () {
             },
             key: {
                 regex: /^(--key)$|^(-k)$/gm,
-                function: function (that) {
+                "function": function (that) {
                     for (; that.index < that.args.length; that.index++) {
                         var currentArgument = that.args[that.index];
                         if (currentArgument.match(that.isFlagRegex)) {
@@ -142,18 +142,18 @@ var Tokenizer = /** @class */ (function () {
                     }
                 }
             },
-            new: {
+            "new": {
                 regex: /^(--new)$|^(-n)$/gm,
-                function: function (that, caller) {
-                    caller.new = true;
+                "function": function (that, caller) {
+                    caller["new"] = true;
                 }
             },
             remove: {
                 regex: /^(--remove)$|^(-r)$/gm,
-                function: function (that, caller) {
+                "function": function (that, caller) {
                     caller.remove = true;
                 }
-            },
+            }
         };
         this.args = args.splice(2, args.length); // reduces the array down to the user passed environment variables 
         for (this.index = 0; this.index < this.args.length; this.index++) {
@@ -161,7 +161,7 @@ var Tokenizer = /** @class */ (function () {
                 this.processFlag(this.args[this.index]); // if an input flag is found it is then processed
             }
         }
-        console.log(this.processedArgs.index);
+        console.log(this.processedArgs);
     }
     /**
      * Compares the flag to the operations defined in the commands object
@@ -171,7 +171,7 @@ var Tokenizer = /** @class */ (function () {
         for (var command in this.commands) {
             if (currentArgument.match(this.commands[command].regex)) {
                 this.index++;
-                this.commands[command].function(this);
+                this.commands[command]["function"](this);
             }
             ;
         }
@@ -196,9 +196,8 @@ var Tokenizer = /** @class */ (function () {
             return null;
         }
         ;
-        console.log(keyValuePairArray);
         return keyValuePairArray;
     };
     return Tokenizer;
 }());
-exports.default = Tokenizer;
+exports["default"] = Tokenizer;

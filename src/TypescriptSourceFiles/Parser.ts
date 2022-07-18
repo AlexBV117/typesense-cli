@@ -181,7 +181,7 @@ export default class Tokenizer {
                 this.processFlag(this.args[this.index]); // if an input flag is found it is then processed
             }
         }
-        console.log(this.processedArgs.index);
+        console.log(this.processedArgs);
     }
 
     /**
@@ -209,7 +209,6 @@ export default class Tokenizer {
         if(!keyValuePairString.match(isKVPRegex)){console.error(ErrorMessage); return null};
         let keyValuePairArray: String[] = keyValuePairString.split(':');
         if(keyValuePairArray.length != 2){console.error(ErrorMessage); return null};
-        console.log(keyValuePairArray);
         return keyValuePairArray;
     }
 }
