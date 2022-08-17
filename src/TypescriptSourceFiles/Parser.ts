@@ -120,6 +120,11 @@ export default class Tokenizer {
                         that.processedArgs.collections.name.push(currentArgument);
                     }
                 }
+                if(that.processedArgs.collections.remove == false) {
+                    that.processedArgs.collections.get == true;
+                } else {
+                    that.processedArgs.collections.get == false;
+                }
             }
         },
         key :{
@@ -134,10 +139,10 @@ export default class Tokenizer {
                         if(currentArgumentArray == null){continue};
                         switch (currentArgumentArray[0]){
                             case "actions":
-                                that.processedArgs.keys.actions.push(currentArgument[1]);
+                                that.processedArgs.keys.actions.push(currentArgumentArray[1]);
                                 break;
                             case "collections":
-                                that.processedArgs.keys.collections.push(currentArgument[1]);
+                                that.processedArgs.keys.collections.push(currentArgumentArray[1]);
                                 break;
                             case "description":
                                 that.processedArgs.keys.description = currentArgumentArray[1];
