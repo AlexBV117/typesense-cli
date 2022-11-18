@@ -1,0 +1,19 @@
+{
+  "compilerOptions": { 
+	  "baseUrl": "src",
+	  "paths": {
+	  },
+	  "outDir": "src/Modules",
+	  "rootDir": "src/TypescriptSourceFiles",
+	  "target": "es2016",                                  
+	  "module": "commonjs",                                
+	  "esModuleInterop": true,                             
+	  "forceConsistentCasingInFileNames": true,            
+	  "strict": true,                                      
+	  "skipLibCheck": true                                 
+  },
+  "exclude": [
+	"refactor/cmdFunctions.ts",
+	"refactor/setup.ts"
+  ],
+}

@@ -10,7 +10,8 @@
     "access": "public"
   },
   "scripts": {
-    "typesense-cli": "npm install && node src/setup.js"
+    "typesense-cli": "npm install && node src/setup.js",
+    "test": "jest"
   },
   "keywords": [
     "Typesense",
@@ -29,6 +30,10 @@
     "typesense": "^0.13.0"
   },
   "devDependencies": {
-    "@types/node": "^15.12.5"
+    "@types/jest": "^29.2.3",
+    "@types/node": "^15.12.5",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
   }
 }

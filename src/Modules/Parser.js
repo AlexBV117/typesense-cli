@@ -1,11 +1,11 @@
 "use strict";
-exports.__esModule = true;
-var Tokenizer = /** @class */ (function () {
+Object.defineProperty(exports, "__esModule", { value: true });
+class Tokenizer {
     /**
      * Tokenizer Constructor Function
      * @param args Array of Strings containing the environment variables
      */
-    function Tokenizer(args) {
+    constructor(args) {
         this.index = 0;
         this.isFlagRegex = /-{1,2}[a-zA-Z]+/gm;
         this.processedArgs = {
@@ -25,7 +25,7 @@ var Tokenizer = /** @class */ (function () {
                 name: []
             },
             keys: {
-                "new": false,
+                new: false,
                 remove: false,
                 actions: [],
                 collections: [],
@@ -33,26 +33,26 @@ var Tokenizer = /** @class */ (function () {
                 value: "",
                 expiresAt: "",
                 id: 0
-            }
+            },
         };
         this.commands = {
             index: {
                 regex: /^(--index)$|^(-i)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     that.processedArgs.index.index = true;
                     for (; that.index < that.args.length; that.index++) {
-                        var currentArgument = that.args[that.index];
+                        let currentArgument = that.args[that.index];
                         if (currentArgument.match(that.isFlagRegex)) {
                             that.processFlag(currentArgument);
                         }
                         else {
-                            var currentArgumentArray = that.createKeyValuePair(currentArgument);
+                            let currentArgumentArray = that.createKeyValuePair(currentArgument);
                             if (currentArgumentArray == null) {
                                 continue;
                             }
                             ;
                             that.processedArgs.index.collections.push(currentArgumentArray[0]);
-                            var currentArgumentData = currentArgumentArray[1].split(',');
+                            let currentArgumentData = currentArgumentArray[1].split(',');
                             that.processedArgs.index.data.push(currentArgumentData);
                         }
                         ;
@@ -61,40 +61,40 @@ var Tokenizer = /** @class */ (function () {
             },
             append: {
                 regex: /^(--append)$|^(-a)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     that.processedArgs.index.append = true;
-                    that.commands.index["function"](that);
+                    that.commands.index.function(that);
                 }
             },
             schemas: {
                 regex: /^(--schemas)$|^(-s)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     that.processedArgs.schemas = true;
                 }
             },
             help: {
                 regex: /^(--help)$|^(-h)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     that.processedArgs.help = true;
                 }
             },
             version: {
                 regex: /^(--version)$|^(-v)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     that.processedArgs.version = true;
                 }
             },
             server: {
                 regex: /^(--server)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     that.processedArgs.server = true;
                 }
             },
             collections: {
                 regex: /^(--collections)$|^(-c)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     for (; that.index < that.args.length; that.index++) {
-                        var currentArgument = that.args[that.index];
+                        let currentArgument = that.args[that.index];
                         if (currentArgument.match(that.isFlagRegex)) {
                             that.processFlag(currentArgument);
                         }
@@ -112,14 +112,14 @@ var Tokenizer = /** @class */ (function () {
             },
             key: {
                 regex: /^(--key)$|^(-k)$/gm,
-                "function": function (that) {
+                function: function (that) {
                     for (; that.index < that.args.length; that.index++) {
-                        var currentArgument = that.args[that.index];
+                        let currentArgument = that.args[that.index];
                         if (currentArgument.match(that.isFlagRegex)) {
                             that.processFlag(currentArgument);
                         }
                         else {
-                            var currentArgumentArray = that.createKeyValuePair(currentArgument);
+                            let currentArgumentArray = that.createKeyValuePair(currentArgument);
                             if (currentArgumentArray == null) {
                                 continue;
                             }
@@ -148,18 +148,18 @@ var Tokenizer = /** @class */ (function () {
                     }
                 }
             },
-            "new": {
+            new: {
                 regex: /^(--new)$|^(-n)$/gm,
-                "function": function (that, caller) {
-                    caller["new"] = true;
+                function: function (that, caller) {
+                    caller.new = true;
                 }
             },
             remove: {
                 regex: /^(--remove)$|^(-r)$/gm,
-                "function": function (that, caller) {
+                function: function (that, caller) {
                     caller.remove = true;
                 }
-            }
+            },
         };
         this.args = args.splice(2, args.length); // reduces the array down to the user passed environment variables 
         for (this.index = 0; this.index < this.args.length; this.index++) {
@@ -173,37 +173,36 @@ var Tokenizer = /** @class */ (function () {
      * Compares the flag to the operations defined in the commands object
      * then executes the accompanying function
      */
-    Tokenizer.prototype.processFlag = function (currentArgument) {
-        for (var command in this.commands) {
+    processFlag(currentArgument) {
+        for (let command in this.commands) {
             if (currentArgument.match(this.commands[command].regex)) {
                 this.index++;
-                this.commands[command]["function"](this);
+                this.commands[command].function(this);
             }
             ;
         }
-    };
+    }
     /**
      * Takes in a key value pair (KVP) in the form of a string and returns it as an array
      * key value pair separators accepted are ':'.
      * @param keyValuePairString string form of a key value pair
      * @returns KVP as an array or null if not a key value pair
      */
-    Tokenizer.prototype.createKeyValuePair = function (keyValuePairString) {
-        var ErrorMessage = "Key Value Pair Error: ".concat(keyValuePairString, " not of recognized form *KEY*:*VALUE*");
-        var isKVPRegex = /^[^:]+[:][^:]+$/gm;
+    createKeyValuePair(keyValuePairString) {
+        let ErrorMessage = `Key Value Pair Error: ${keyValuePairString} not of recognized form *KEY*:*VALUE*`;
+        let isKVPRegex = /^[^:]+[:][^:]+$/gm;
         if (!keyValuePairString.match(isKVPRegex)) {
             console.error(ErrorMessage);
             return null;
         }
         ;
-        var keyValuePairArray = keyValuePairString.split(':');
+        let keyValuePairArray = keyValuePairString.split(':');
         if (keyValuePairArray.length != 2) {
             console.error(ErrorMessage);
             return null;
         }
         ;
         return keyValuePairArray;
-    };
-    return Tokenizer;
-}());
-exports["default"] = Tokenizer;
+    }
+}
+exports.default = Tokenizer;
