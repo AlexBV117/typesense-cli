@@ -6,8 +6,8 @@ export default interface Keys_Token {
         description?: string,
         value?: string,
         expiresAt?: string,
-        id: number
+        id: number,
+        new: boolean,
+        remove: boolean
     }
-    new: boolean,
-    remove: boolean
 }

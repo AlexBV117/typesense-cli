@@ -12,20 +12,29 @@ class Parser {
             index: {
                 regex: /^(index)$|^(i)$/gm,
                 function: function (peram, parser) {
+                    const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
+                    const ObjArrayRegex = /\[(?:{.*})+\]/gm;
                     try {
                         let token = {
                             name: "index",
                             data: {
                                 append: false,
-                                collection: peram[0],
-                                data: []
+                                collection: "",
+                                data_files: [],
+                                data_raw: []
                             }
                         };
-                        if (peram.length <= 1) {
-                            throw "LENGTH ERROR: Not enough arguments!!!";
-                        }
-                        else {
-                            token.data.data = peram.slice(1, peram.length);
+                        for (let i = peram.length; i > 0; i--) {
+                            if (peram[i].match(filePathRegex)) {
+                                token.data.data_files.push(peram[i]);
+                            }
+                            else if (peram[i].match(ObjArrayRegex)) {
+                                token.data.data_raw.push(peram[i]);
+                            }
+                            else {
+                                throw `Type Error: ${peram[i]} invalid data reference
+                            Expected valid path to json or json object array.`;
+                            }
                         }
                         return token;
                     }
@@ -38,20 +47,29 @@ class Parser {
             append: {
                 regex: /^(append)$|^(a)$/gm,
                 function: function (peram, parser) {
+                    const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
+                    const ObjArrayRegex = /\[(?:{.*})+\]/gm;
                     try {
                         let token = {
                             name: "index",
                             data: {
                                 append: true,
-                                collection: peram[0],
-                                data: []
+                                collection: "",
+                                data_files: [],
+                                data_raw: []
                             }
                         };
-                        if (peram.length <= 1) {
-                            throw "LENGTH ERROR: Not enough arguments!!!";
-                        }
-                        else {
-                            token.data.data = peram.slice(1, peram.length);
+                        for (let i = peram.length; i > 0; i--) {
+                            if (peram[i].match(filePathRegex)) {
+                                token.data.data_files.push(peram[i]);
+                            }
+                            else if (peram[i].match(ObjArrayRegex)) {
+                                token.data.data_raw.push(peram[i]);
+                            }
+                            else {
+                                throw `Type Error: ${peram[i]} invalid data reference
+                            Expected valid path to json or json object array.`;
+                            }
                         }
                         return token;
                     }
@@ -68,15 +86,7 @@ class Parser {
                         let token = {
                             name: "schemas",
                             data: {},
-                            new: false,
-                            remove: false
                         };
-                        if (peram[0] = "new") {
-                            token.new = true;
-                        }
-                        if (peram[0] = "remove") {
-                            token.remove = true;
-                        }
                         return token;
                     }
                     catch (error) {
@@ -124,16 +134,11 @@ class Parser {
                         let token = {
                             name: "collection",
                             data: {
-                                name: []
+                                name: [],
+                                new: false,
+                                remove: false
                             },
-                            remove: false
                         };
-                        if (peram.includes("remove") && peram.length > 1) {
-                            token.remove = true;
-                            let index = peram.indexOf("remove");
-                            peram.splice(index, 1);
-                        }
-                        token.data.name = peram;
                         return token;
                     }
                     catch (error) {
@@ -154,10 +159,10 @@ class Parser {
                                 description: "",
                                 value: "",
                                 expiresAt: "",
-                                id: 0
-                            },
-                            new: false,
-                            remove: false
+                                id: 0,
+                                new: false,
+                                remove: false
+                            }
                         };
                         return token;
                     }

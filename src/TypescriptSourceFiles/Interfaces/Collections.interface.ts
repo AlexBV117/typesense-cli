@@ -1,7 +1,8 @@
 export default interface Collection_Token {
     name: "collection",
     data: {
-        name: string[]
+        name: string[],
+        new: boolean,
+        remove: boolean
     },
-    remove: boolean
 }

@@ -3,6 +3,7 @@ export default interface Index_Token {
     data: {
         append: boolean,
         collection: string,
-        data: string[]
+        data_files: string[],
+        data_raw: Array<Object>
     }
 }
