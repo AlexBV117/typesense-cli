@@ -2,6 +2,9 @@
   "compilerOptions": { 
 	  "baseUrl": "src",
 	  "paths": {
+		"@Modules/*": ["src/Modules/*"],
+		"@Config/*": ["config/*"],
+		"@Interfaces/*" : ["src/TypescriptSourceFiles/Interfaces/*"]
 	  },
 	  "outDir": "src/Modules",
 	  "rootDir": "src/TypescriptSourceFiles",
@@ -13,7 +16,9 @@
 	  "skipLibCheck": true                                 
   },
   "exclude": [
+	"refactor/Parser.ts",
 	"refactor/cmdFunctions.ts",
-	"refactor/setup.ts"
+	"refactor/setup.ts",
+	"jest.config.ts"
   ],
 }

@@ -1,7 +1,7 @@
 "use strict";
 import { Operation } from "./Operation";
 export class Index extends Operation{
-    constructor(...args){
+    constructor(...args: any){
         super(args);
     }
 }

@@ -17,7 +17,7 @@ exports.run = void 0;
 const Parser_1 = __importDefault(require("./Parser"));
 function run(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        let tokens = new Parser_1.default(args);
+        let parser = new Parser_1.default(args);
     });
 }
 exports.run = run;

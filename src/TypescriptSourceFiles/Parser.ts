@@ -1,219 +1,215 @@
-"use strict";
+"Use Strict"
 
-interface EnvironmentVariables {
-    help : boolean,
-    index : {
-        index : boolean,
-        append : boolean,
-        collections: String[],
-        data : String[][]
-    },
-    schemas : boolean,
-    version : boolean,
-    server : boolean,
-    collections : {
-        get : boolean,
-        remove : boolean,
-        name : String[]
-    },
-    keys :  {
-        new : boolean,
-        remove : boolean,
-        actions : String[],
-        collections : String[],
-        description : String,
-        value : String,
-        expiresAt : String,
-        id : number
-    },   
-}
+import Collection_Token from './Interfaces/Collections.interface';
+import Help_Token from './Interfaces/Help.interface';
+import Index_Token from './Interfaces/Index.interface';
+import Keys_Token from './Interfaces/Keys.interface';
+import Schemas_Token from './Interfaces/Schemas.interface';
+import Server_Token from './Interfaces/Server.interface';
+import Version_Token from './Interfaces/Version.interface';
 
-export default class Tokenizer {
-    public index: number = 0;
-    public args: String[];
-    public isFlagRegex = /-{1,2}[a-zA-Z]+/gm;
-    public processedArgs: EnvironmentVariables = {
-        help : false,
+export default class Parser {
+    private args: string[];
+    private tokens: Array<any> = [];
+    private commands = {
         index : {
-            index : false,
-            append : false,
-            collections: [],
-            data : []
-        },
-        schemas : false,
-        version : false,
-        server : false,
-        collections : {
-            get : false,
-            remove : false,
-            name : []
-        },
-        keys :  {
-            new : false,
-            remove : false,
-            actions : [],
-            collections : [],
-            description : "",
-            value : "",
-            expiresAt : "",
-            id : 0
-        },   
-    };
-
-    public commands = {
-        index : {
-            regex : /^(--index)$|^(-i)$/gm,
-            function : function (that: Tokenizer) {
-                that.processedArgs.index.index = true;
-                for(; that.index < that.args.length; that.index++){
-                    let currentArgument = that.args[that.index];
-                    if(currentArgument.match(that.isFlagRegex)){that.processFlag(currentArgument)}
-                    else { 
-                        let currentArgumentArray: String[] | null = that.createKeyValuePair(currentArgument);
-                        if(currentArgumentArray == null){continue};
-                        that.processedArgs.index.collections.push(currentArgumentArray[0]);
-                        let currentArgumentData: String[] = currentArgumentArray[1].split(',')
-                        that.processedArgs.index.data.push(currentArgumentData);
-                     };
-                }
-            }
-        },
-        append :{
-            regex : /^(--append)$|^(-a)$/gm,
-            function : function (that: Tokenizer) {
-                that.processedArgs.index.append = true;
-                that.commands.index.function(that);
-            }
-        },
-        schemas :{
-            regex : /^(--schemas)$|^(-s)$/gm,
-            function : function (that: Tokenizer) {
-                that.processedArgs.schemas = true;
-            }
-        },
-        help :{
-            regex : /^(--help)$|^(-h)$/gm,
-            function : function (that: Tokenizer) {
-                that.processedArgs.help = true;
-            }
-        },
-        version :{
-            regex : /^(--version)$|^(-v)$/gm,
-            function : function (that: Tokenizer) {
-                that.processedArgs.version = true;
-            }
-        },
-        server :{
-            regex : /^(--server)$/gm,
-            function : function (that: Tokenizer) {
-                that.processedArgs.server = true;
-            }
-        },
-        collections :{
-            regex : /^(--collections)$|^(-c)$/gm,
-            function : function (that: Tokenizer) {
-                for(; that.index < that.args.length; that.index++){
-                    let currentArgument: String = that.args[that.index];
-                    if(currentArgument.match(that.isFlagRegex)){
-                        that.processFlag(currentArgument)
-                    }else {
-                        that.processedArgs.collections.name.push(currentArgument);
-                    }
-                }
-                if(that.processedArgs.collections.remove == false) {
-                    that.processedArgs.collections.get == true;
-                } else {
-                    that.processedArgs.collections.get == false;
-                }
-            }
-        },
-        key :{
-            regex : /^(--key)$|^(-k)$/gm,
-            function : function (that: Tokenizer) {
-                for(; that.index < that.args.length; that.index++){
-                    let currentArgument: String = that.args[that.index];
-                    if(currentArgument.match(that.isFlagRegex)){
-                        that.processFlag(currentArgument)
-                    }else {
-                        let currentArgumentArray: String[] | null = that.createKeyValuePair(currentArgument);
-                        if(currentArgumentArray == null){continue};
-                        switch (currentArgumentArray[0]){
-                            case "actions":
-                                that.processedArgs.keys.actions.push(currentArgumentArray[1]);
-                                break;
-                            case "collections":
-                                that.processedArgs.keys.collections.push(currentArgumentArray[1]);
-                                break;
-                            case "description":
-                                that.processedArgs.keys.description = currentArgumentArray[1];
-                                break;
-                            case "value":
-                                that.processedArgs.keys.expiresAt = currentArgumentArray[1];
-                                break;
-                            case "id":
-                                that.processedArgs.keys.id = Number.parseInt(currentArgumentArray[1].toString());
-                                break;
-                            case "value":
-                                that.processedArgs.keys.value = currentArgumentArray[1];
-                                break;
+            regex : /^(index)$|^(i)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Index_Token = {
+                        name: "index",
+                        data: {
+                            append: false,
+                            collection: peram[0],
+                            data: []
                         }
                     }
+                    if(peram.length <= 1){
+                        throw "LENGTH ERROR: Not enough arguments!!!";
+                    }else{
+                        token.data.data = peram.slice(1, peram.length);
+                    }
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
                 }
             }
         },
-        new :{
-            regex : /^(--new)$|^(-n)$/gm,
-            function : function (that: Tokenizer, caller?) {
-                caller.new = true;
+        append : {
+            regex : /^(append)$|^(a)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Index_Token = {
+                        name: "index",
+                        data: {
+                            append: true,
+                            collection: peram[0],
+                            data: []
+                        }
+                    }
+                    if(peram.length <= 1){
+                        throw "LENGTH ERROR: Not enough arguments!!!";
+                    }else{
+                        token.data.data = peram.slice(1, peram.length);
+                    }
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
             }
         },
-        remove :{
-            regex : /^(--remove)$|^(-r)$/gm,
-            function : function (that: Tokenizer, caller?) {
-                caller.remove = true;
+        schemas : {
+            regex : /^(schemas)$|^(s)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Schemas_Token = {
+                        name: "schemas",
+                        data: {},
+                        new : false, 
+                        remove: false
+                    }
+                    if(peram[0] = "new"){token.new = true}
+                    if(peram[0] = "remove"){token.remove = true}
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
             }
         },
+        version : {
+            regex : /^(version)$|^(v)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Version_Token = {
+                        name:  "version",
+                        data: {}
+                    }
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
+            }
+        },
+        server : {
+            regex : /^(server)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Server_Token = {
+                        name: "server",
+                        data: {}
+                    }
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
+            }
+        },
+        collections : {
+            regex : /^(collections)$|^(c)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Collection_Token = {
+                        name: "collection",
+                        data: {
+                            name: []
+                        },
+                        remove: false
+                    }
+                    if(peram.includes("remove") && peram.length > 1){
+                        token.remove = true
+                        let index = peram.indexOf("remove");
+                        peram.splice(index, 1)
+                    }
+                    token.data.name = peram
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
+            }
+        },
+        keys : {
+            regex : /^(key)$|^(k)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Keys_Token = {
+                        name: "key",
+                        data: {
+                            actions: [],
+                            collections: [],
+                            description: "",
+                            value: "",
+                            expiresAt: "",
+                            id: 0
+                        },
+                        new: false,
+                        remove: false
+                    }
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
+            }
+        },
+        help : {
+            regex : /^(help)$|^(h)$/gm,
+            function : function(peram: string[], parser: Parser) {
+                try {
+                    let token: Help_Token = {
+                        name: "help",
+                        data: {
+                            path: "@Config/help.txt"
+                        }
+                    }
+                    return token
+                } catch (error) {
+                    console.error(error)
+                    return null
+                }
+            }
+        }
     };
-    
     /**
-     * Tokenizer Constructor Function
-     * @param args Array of Strings containing the environment variables
+     * 
+     * @param args The command line arguments from the porcess
      */
-    constructor(args: String[]) {
-        this.args = args.splice(2,args.length); // reduces the array down to the user passed environment variables 
-        for(this.index = 0; this.index < this.args.length; this.index++){
-            if(this.args[this.index].match(this.isFlagRegex)){
-                this.processFlag(this.args[this.index]); // if an input flag is found it is then processed
+    constructor(args: string[]) {
+        // Isolate the user generated aguments and concatonate them to a single string
+        let argumetString: string = args.slice(2,args.length).join("|").trim();
+        // Create an array of strings where each string contains the process and its associated data/perameters
+        this.args = argumetString.split(/-{1,2}/).filter(elem => {
+            if(elem != "" && ! elem.match(/^\|*$/)){
+                return elem;
+            }});
+        // Loop over the perameters
+        for(let i = 0; i < this.args.length; i++){
+            let _process: string[] = this.args[i].split("|").filter(elem => elem)
+            for(let command in this.commands){
+                if(_process[0].match(this.commands[command as keyof typeof this.commands].regex)){
+                    let token = this.commands[command as keyof typeof this.commands].function(_process.slice(1, _process.length), this);
+                    if(token != null){
+                        this.tokens.push(token)
+                    }
+                };
             }
-        }
-        console.log(this.processedArgs);
+        };
+        console.log(this.tokens[0])
     }
 
-    /**
-     * Compares the flag to the operations defined in the commands object
-     * then executes the accompanying function
-     */
-    public processFlag(currentArgument: String){
-        for(let command in this.commands){
-            if(currentArgument.match(this.commands[command].regex)){
-                this.index++;
-                this.commands[command].function(this);
-            };
+    private createMap(kvp: string): Array<string> | null {
+        const kvpRegex = /[^=]*=[^=]*/gm
+        if(kvp.match(kvpRegex)){
+            let result_array = kvp.split('=').filter(elem => elem).slice(0,2)
+            return result_array
         }
-    }
-
-    /**
-     * Takes in a key value pair (KVP) in the form of a string and returns it as an array
-     * key value pair separators accepted are ':'.
-     * @param keyValuePairString string form of a key value pair
-     * @returns KVP as an array or null if not a key value pair
-     */
-    public createKeyValuePair(keyValuePairString: String) : String[] | null{
-        let ErrorMessage = `Key Value Pair Error: ${keyValuePairString} not of recognized form *KEY*:*VALUE*`;
-        let isKVPRegex = /^[^:]+[:][^:]+$/gm;
-        if(!keyValuePairString.match(isKVPRegex)){console.error(ErrorMessage); return null};
-        let keyValuePairArray: String[] = keyValuePairString.split(':');
-        if(keyValuePairArray.length != 2){console.error(ErrorMessage); return null};
-        return keyValuePairArray;
+        else{
+            return null
+        }
     }
 }
