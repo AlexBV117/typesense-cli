@@ -11,6 +11,9 @@ import Version_Token from './Interfaces/Version.interface';
 export default class Parser {
     private args: string[];
     private tokens: Array<any> = [];
+    /**
+     * An object containg all the functions for processing the command line arguments as tokens
+     */
     private commands = {
         index : {
             regex : /^(index)$|^(i)$/gm,
@@ -135,6 +138,20 @@ export default class Parser {
                             remove: false
                         },
                     }
+                    if(peram.includes("new")){
+                        token.data.new = true;
+                        let index = peram.lastIndexOf("new");
+                        peram.splice(index, 1);
+                    }
+                    if (peram.includes("remove")) {
+                        token.data.remove = true;
+                        let index = peram.lastIndexOf("remove");
+                        peram.splice(index, 1);
+                    }
+                    if(token.data.new && token.data.remove){
+                        throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed"
+                    }
+                    token.data.name.concat(peram)
                     return token
                 } catch (error) {
                     console.error(error)
@@ -158,6 +175,24 @@ export default class Parser {
                             new: false,
                             remove: false
                         }
+                    }
+                    console.log(peram)
+                    if(peram.includes("new")){
+                        token.data.new = true;
+                        let index = peram.lastIndexOf("new");
+                        peram.splice(index, 1);
+                    }
+                    console.log(peram)
+                    if (peram.includes("remove")) {
+                        token.data.remove = true;
+                        let index = peram.lastIndexOf("remove");
+                        peram.splice(index, 1);
+                    }
+                    if(token.data.new && token.data.remove){
+                        throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed"
+                    }
+                    for(let i = peram.length; i > 0; i--){
+                        
                     }
                     return token
                 } catch (error) {
@@ -208,7 +243,7 @@ export default class Parser {
                 };
             }
         };
-        console.log(this.tokens[0])
+        console.log(this.tokens)
     }
 
     private createMap(kvp: string): Array<string> | null {

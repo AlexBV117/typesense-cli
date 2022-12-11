@@ -8,6 +8,9 @@ class Parser {
      */
     constructor(args) {
         this.tokens = [];
+        /**
+         * An object containg all the functions for processing the command line arguments as tokens
+         */
         this.commands = {
             index: {
                 regex: /^(index)$|^(i)$/gm,
@@ -139,6 +142,20 @@ class Parser {
                                 remove: false
                             },
                         };
+                        if (peram.includes("new")) {
+                            token.data.new = true;
+                            let index = peram.lastIndexOf("new");
+                            peram.splice(index, 1);
+                        }
+                        if (peram.includes("remove")) {
+                            token.data.remove = true;
+                            let index = peram.lastIndexOf("remove");
+                            peram.splice(index, 1);
+                        }
+                        if (token.data.new && token.data.remove) {
+                            throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
+                        }
+                        token.data.name.concat(peram);
                         return token;
                     }
                     catch (error) {
@@ -164,6 +181,23 @@ class Parser {
                                 remove: false
                             }
                         };
+                        console.log(peram);
+                        if (peram.includes("new")) {
+                            token.data.new = true;
+                            let index = peram.lastIndexOf("new");
+                            peram.splice(index, 1);
+                        }
+                        console.log(peram);
+                        if (peram.includes("remove")) {
+                            token.data.remove = true;
+                            let index = peram.lastIndexOf("remove");
+                            peram.splice(index, 1);
+                        }
+                        if (token.data.new && token.data.remove) {
+                            throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
+                        }
+                        for (let i = peram.length; i > 0; i--) {
+                        }
                         return token;
                     }
                     catch (error) {
@@ -213,7 +247,7 @@ class Parser {
             }
         }
         ;
-        console.log(this.tokens[0]);
+        console.log(this.tokens);
     }
     createMap(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
