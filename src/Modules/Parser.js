@@ -1,7 +1,5 @@
-"use strict";
 "Use Strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-class Parser {
+export default class Parser {
     /**
      *
      * @param args The command line arguments from the porcess
@@ -27,7 +25,7 @@ class Parser {
                                 data_raw: []
                             }
                         };
-                        for (let i = peram.length; i > 0; i--) {
+                        for (let i = (peram.length - 1); i >= 0; i--) {
                             if (peram[i].match(filePathRegex)) {
                                 token.data.data_files.push(peram[i]);
                             }
@@ -35,8 +33,7 @@ class Parser {
                                 token.data.data_raw.push(peram[i]);
                             }
                             else {
-                                throw `Type Error: ${peram[i]} invalid data reference
-                            Expected valid path to json or json object array.`;
+                                throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`;
                             }
                         }
                         return token;
@@ -62,7 +59,8 @@ class Parser {
                                 data_raw: []
                             }
                         };
-                        for (let i = peram.length; i > 0; i--) {
+                        for (let i = (peram.length - 1); i >= 0; i--) {
+                            console.log(peram);
                             if (peram[i].match(filePathRegex)) {
                                 token.data.data_files.push(peram[i]);
                             }
@@ -70,8 +68,7 @@ class Parser {
                                 token.data.data_raw.push(peram[i]);
                             }
                             else {
-                                throw `Type Error: ${peram[i]} invalid data reference
-                            Expected valid path to json or json object array.`;
+                                throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`;
                             }
                         }
                         return token;
@@ -228,7 +225,7 @@ class Parser {
         // Isolate the user generated aguments and concatonate them to a single string
         let argumetString = args.slice(2, args.length).join("|").trim();
         // Create an array of strings where each string contains the process and its associated data/perameters
-        this.args = argumetString.split(/-{1,2}/).filter(elem => {
+        this.args = argumetString.split(/(?<![^\|\n])-{1,2}/gs).filter(elem => {
             if (elem != "" && !elem.match(/^\|*$/)) {
                 return elem;
             }
@@ -247,7 +244,9 @@ class Parser {
             }
         }
         ;
-        console.log(this.tokens);
+    }
+    getTokens() {
+        return this.tokens;
     }
     createMap(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
@@ -260,4 +259,3 @@ class Parser {
         }
     }
 }
-exports.default = Parser;

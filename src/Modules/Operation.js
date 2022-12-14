@@ -1,7 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Operation = void 0;
-class Operation {
+export class Operation {
     // private start_time: Date;
     // private finish_time: Date;
     constructor(...args) {
@@ -16,4 +14,3 @@ class Operation {
         }
     }
 }
-exports.Operation = Operation;

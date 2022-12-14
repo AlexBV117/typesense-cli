@@ -9,6 +9,9 @@ import Server_Token from './Interfaces/Server.interface';
 import Version_Token from './Interfaces/Version.interface';
 
 export default class Parser {
+    public getTokens(): Array<any>{
+        return this.tokens;
+    }
     private args: string[];
     private tokens: Array<any> = [];
     /**
@@ -30,15 +33,14 @@ export default class Parser {
                             data_raw: []
                         }
                     }
-                    for(let i = peram.length; i > 0; i--){
+                    for(let i = (peram.length - 1); i >= 0; i--){
                         if(peram[i].match(filePathRegex)){
                             token.data.data_files.push(peram[i]);
                         }
                         else if(peram[i].match(ObjArrayRegex)){
                             token.data.data_raw.push(peram[i]);
                         } else {
-                            throw `Type Error: ${peram[i]} invalid data reference
-                            Expected valid path to json or json object array.`
+                            throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`
                         }
                     }
                     return token
@@ -63,15 +65,15 @@ export default class Parser {
                             data_raw: []
                         }
                     }
-                    for(let i = peram.length; i > 0; i--){
+                    for(let i = (peram.length - 1); i >= 0; i--){
+                        console.log(peram);
                         if(peram[i].match(filePathRegex)){
                             token.data.data_files.push(peram[i]);
                         }
                         else if(peram[i].match(ObjArrayRegex)){
                             token.data.data_raw.push(peram[i]);
                         } else {
-                            throw `Type Error: ${peram[i]} invalid data reference
-                            Expected valid path to json or json object array.`
+                            throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`
                         }
                     }
                     return token
@@ -227,7 +229,7 @@ export default class Parser {
         // Isolate the user generated aguments and concatonate them to a single string
         let argumetString: string = args.slice(2,args.length).join("|").trim();
         // Create an array of strings where each string contains the process and its associated data/perameters
-        this.args = argumetString.split(/-{1,2}/).filter(elem => {
+        this.args = argumetString.split(/(?<![^\|\n])-{1,2}/gs).filter(elem => {
             if(elem != "" && ! elem.match(/^\|*$/)){
                 return elem;
             }});
@@ -243,7 +245,6 @@ export default class Parser {
                 };
             }
         };
-        console.log(this.tokens)
     }
 
     private createMap(kvp: string): Array<string> | null {
