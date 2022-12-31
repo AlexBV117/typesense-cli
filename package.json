@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "tsc && jest"
   },
   "keywords": [
     "Typesense",

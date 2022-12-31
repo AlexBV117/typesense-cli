@@ -14,7 +14,7 @@ export default class Parser {
                 regex: /^(index)$|^(i)$/gm,
                 function: function (peram, parser) {
                     const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
-                    const ObjArrayRegex = /\[(?:{.*})+\]/gm;
+                    const ObjRegex = /({[^{]*})/gm;
                     try {
                         let token = {
                             name: "index",
@@ -25,12 +25,16 @@ export default class Parser {
                                 data_raw: []
                             }
                         };
-                        for (let i = (peram.length - 1); i >= 0; i--) {
+                        token.data.collection = peram[0];
+                        for (let i = (peram.length - 1); i > 0; i--) {
                             if (peram[i].match(filePathRegex)) {
                                 token.data.data_files.push(peram[i]);
                             }
-                            else if (peram[i].match(ObjArrayRegex)) {
-                                token.data.data_raw.push(peram[i]);
+                            else if (peram[i].match(ObjRegex)) {
+                                let tmp = peram[i].match(ObjRegex);
+                                if (tmp != null) {
+                                    token.data.data_raw = token.data.data_raw.concat(tmp);
+                                }
                             }
                             else {
                                 throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`;
@@ -48,7 +52,7 @@ export default class Parser {
                 regex: /^(append)$|^(a)$/gm,
                 function: function (peram, parser) {
                     const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
-                    const ObjArrayRegex = /\[(?:{.*})+\]/gm;
+                    const ObjRegex = /({[^{]*})/gm;
                     try {
                         let token = {
                             name: "index",
@@ -59,13 +63,16 @@ export default class Parser {
                                 data_raw: []
                             }
                         };
-                        for (let i = (peram.length - 1); i >= 0; i--) {
-                            console.log(peram);
+                        token.data.collection = peram[0];
+                        for (let i = (peram.length - 1); i > 0; i--) {
                             if (peram[i].match(filePathRegex)) {
                                 token.data.data_files.push(peram[i]);
                             }
-                            else if (peram[i].match(ObjArrayRegex)) {
-                                token.data.data_raw.push(peram[i]);
+                            else if (peram[i].match(ObjRegex)) {
+                                let tmp = peram[i].match(ObjRegex);
+                                if (tmp != null) {
+                                    token.data.data_raw = token.data.data_raw.concat(tmp);
+                                }
                             }
                             else {
                                 throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`;
@@ -178,13 +185,11 @@ export default class Parser {
                                 remove: false
                             }
                         };
-                        console.log(peram);
                         if (peram.includes("new")) {
                             token.data.new = true;
                             let index = peram.lastIndexOf("new");
                             peram.splice(index, 1);
                         }
-                        console.log(peram);
                         if (peram.includes("remove")) {
                             token.data.remove = true;
                             let index = peram.lastIndexOf("remove");

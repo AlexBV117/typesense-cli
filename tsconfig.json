@@ -16,6 +16,7 @@
 	  "skipLibCheck": true                                 
   },
   "exclude": [
+	"/src/TypescriptSourceFiles/Interfaces",
 	"refactor/Parser.ts",
 	"refactor/cmdFunctions.ts",
 	"refactor/setup.ts",
