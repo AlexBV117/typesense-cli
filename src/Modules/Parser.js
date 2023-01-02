@@ -12,19 +12,25 @@ export default class Parser {
         this.commands = {
             index: {
                 regex: /^(index)$|^(i)$/gm,
-                function: function (peram, parser) {
+                function: function (peram, parser, _token) {
                     const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
                     const ObjRegex = /({[^{]*})/gm;
                     try {
-                        let token = {
-                            name: "index",
-                            data: {
-                                append: false,
-                                collection: "",
-                                data_files: [],
-                                data_raw: []
-                            }
-                        };
+                        let token;
+                        if (typeof _token === 'undefined') {
+                            token = {
+                                name: "index",
+                                data: {
+                                    append: false,
+                                    collection: "",
+                                    data_files: [],
+                                    data_raw: []
+                                }
+                            };
+                        }
+                        else {
+                            token = _token;
+                        }
                         token.data.collection = peram[0];
                         for (let i = (peram.length - 1); i > 0; i--) {
                             if (peram[i].match(filePathRegex)) {
@@ -37,7 +43,7 @@ export default class Parser {
                                 }
                             }
                             else {
-                                throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`;
+                                throw `Data Reference Error: ${peram[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`;
                             }
                         }
                         return token;
@@ -51,39 +57,16 @@ export default class Parser {
             append: {
                 regex: /^(append)$|^(a)$/gm,
                 function: function (peram, parser) {
-                    const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
-                    const ObjRegex = /({[^{]*})/gm;
-                    try {
-                        let token = {
-                            name: "index",
-                            data: {
-                                append: true,
-                                collection: "",
-                                data_files: [],
-                                data_raw: []
-                            }
-                        };
-                        token.data.collection = peram[0];
-                        for (let i = (peram.length - 1); i > 0; i--) {
-                            if (peram[i].match(filePathRegex)) {
-                                token.data.data_files.push(peram[i]);
-                            }
-                            else if (peram[i].match(ObjRegex)) {
-                                let tmp = peram[i].match(ObjRegex);
-                                if (tmp != null) {
-                                    token.data.data_raw = token.data.data_raw.concat(tmp);
-                                }
-                            }
-                            else {
-                                throw `Type Error: ${peram[i]} invalid data reference. Expected a valid file path or an array of JSON objects.`;
-                            }
+                    let token = {
+                        name: "index",
+                        data: {
+                            append: true,
+                            collection: "",
+                            data_files: [],
+                            data_raw: []
                         }
-                        return token;
-                    }
-                    catch (error) {
-                        console.error(error);
-                        return null;
-                    }
+                    };
+                    return parser.commands.index.function(peram, parser, token);
                 }
             },
             schemas: {
@@ -159,7 +142,7 @@ export default class Parser {
                         if (token.data.new && token.data.remove) {
                             throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                         }
-                        token.data.name.concat(peram);
+                        token.data.name = token.data.name.concat(peram);
                         return token;
                     }
                     catch (error) {
@@ -180,7 +163,7 @@ export default class Parser {
                                 description: "",
                                 value: "",
                                 expiresAt: "",
-                                id: 0,
+                                id: -1,
                                 new: false,
                                 remove: false
                             }
@@ -195,10 +178,47 @@ export default class Parser {
                             let index = peram.lastIndexOf("remove");
                             peram.splice(index, 1);
                         }
-                        if (token.data.new && token.data.remove) {
+                        if (token.data.new === true && token.data.remove === true) {
                             throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                         }
-                        for (let i = peram.length; i > 0; i--) {
+                        for (let i = peram.length - 1; i >= 0; i--) {
+                            let kvp = parser.generateKVP(peram[i]);
+                            if (kvp !== null) {
+                                switch (kvp[0]) {
+                                    case "actions": {
+                                        token.data.actions = token.data.actions.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(" ", "").split(','));
+                                        break;
+                                    }
+                                    case "collections": {
+                                        token.data.collections = token.data.collections.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(" ", "").split(','));
+                                        break;
+                                    }
+                                    case "description": {
+                                        token.data.description = kvp[1].replace(/\"/g, "");
+                                        break;
+                                    }
+                                    case "value": {
+                                        token.data.value = kvp[1].replace(/\"/g, "");
+                                        break;
+                                    }
+                                    case "expiresAt": {
+                                        token.data.expiresAt = kvp[1].replace(/\"/g, "");
+                                        break;
+                                    }
+                                    case "id": {
+                                        const num = Number(kvp[1].replace(/\"/g, ""));
+                                        if (isNaN(num)) {
+                                            throw "Type Error: id provided is not a valid number";
+                                        }
+                                        else
+                                            token.data.id = Number(kvp[1].replace(/\"/g, ""));
+                                        break;
+                                    }
+                                    default: {
+                                        throw `Undefined Argument Error: \"${kvp}\" is not a supported value for key data`;
+                                    }
+                                }
+                            }
                         }
                         return token;
                     }
@@ -215,9 +235,17 @@ export default class Parser {
                         let token = {
                             name: "help",
                             data: {
-                                path: "@Config/help.txt"
+                                path: ""
                             }
                         };
+                        const tmp = __dirname.match(/^(\/.*\/typesense-cli)/gm);
+                        if (tmp !== null) {
+                            let path = tmp[0];
+                            token.data.path = path + "/config/help.txt";
+                        }
+                        else {
+                            throw "Unresolved Path Error: unable to generate the path to the help.txt file";
+                        }
                         return token;
                     }
                     catch (error) {
@@ -249,13 +277,14 @@ export default class Parser {
             }
         }
         ;
+        console.log(this.tokens[0]);
     }
     getTokens() {
         return this.tokens;
     }
-    createMap(kvp) {
+    generateKVP(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
-        if (kvp.match(kvpRegex)) {
+        if (typeof kvp.match(kvpRegex) !== null) {
             let result_array = kvp.split('=').filter(elem => elem).slice(0, 2);
             return result_array;
         }
