@@ -28,7 +28,8 @@ export default class Parser {
             regex : /^(index)$|^(i)$/gm,
             function : function(peram: string[], parser: Parser, _token?: Index_Token) {
                 const filePathRegex: RegExp = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
-                const ObjRegex: RegExp = /({[^{]*})/gm;
+                const ObjRegex: RegExp = /{.*}/gm;
+                const ArrayRegex: RegExp = /\[[^\[\]]*,?\]/gm
                 try {
                     let token: Index_Token;
                     if(typeof _token === 'undefined'){
@@ -44,16 +45,20 @@ export default class Parser {
                     } else {
                         token = _token
                     }
+                    // The first argument for the index flag is the collection
                     token.data.collection = peram[0];
+                    // iterate over the remaining args
                     for(let i = (peram.length - 1); i > 0; i--){
-                        if(peram[i].match(filePathRegex)){
+                        if(peram[i].match(filePathRegex)){                     // add the file paths to the correct array
                             token.data.data_files.push(peram[i]);
-                        }else if(peram[i].match(ObjRegex)){
-                            let tmp = peram[i].match(ObjRegex)
-                            if(tmp != null){
-                                token.data.data_raw = token.data.data_raw.concat(tmp)
+                        }else if(peram[i].match(ObjRegex)){                    // add objects to the raw data array
+                            if(peram[i].match(ArrayRegex)){
+                                let tmp = peram[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g,'');
+                                token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"))
+                            } else {
+                                token.data.data_raw.push(peram[i])
                             }
-                        } else {
+                        } else { // throw an error if an argument doesn't match the two supported data types
                             throw `Data Reference Error: ${peram[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`
                         }
                     }

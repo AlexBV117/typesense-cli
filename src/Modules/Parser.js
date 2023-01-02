@@ -1,20 +1,22 @@
 "Use Strict";
+// Parser Class that generates defined tokens for every passed flag from the command line
 export default class Parser {
     /**
-     *
-     * @param args The command line arguments from the porcess
+     * Parser Constructor that takes the command line args and then generates the relevant tokens
+     * @param args The command line arguments from the process
      */
     constructor(args) {
         this.tokens = [];
         /**
-         * An object containg all the functions for processing the command line arguments as tokens
+         * An object containing all the functions for processing the command line arguments as tokens
          */
         this.commands = {
             index: {
                 regex: /^(index)$|^(i)$/gm,
                 function: function (peram, parser, _token) {
                     const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
-                    const ObjRegex = /({[^{]*})/gm;
+                    const ObjRegex = /{.*}/gm;
+                    const ArrayRegex = /\[[^\[\]]*,?\]/gm;
                     try {
                         let token;
                         if (typeof _token === 'undefined') {
@@ -31,18 +33,23 @@ export default class Parser {
                         else {
                             token = _token;
                         }
+                        // The first argument for the index flag is the collection
                         token.data.collection = peram[0];
+                        // iterate over the remaining args
                         for (let i = (peram.length - 1); i > 0; i--) {
-                            if (peram[i].match(filePathRegex)) {
+                            if (peram[i].match(filePathRegex)) { // add the file paths to the correct array
                                 token.data.data_files.push(peram[i]);
                             }
-                            else if (peram[i].match(ObjRegex)) {
-                                let tmp = peram[i].match(ObjRegex);
-                                if (tmp != null) {
-                                    token.data.data_raw = token.data.data_raw.concat(tmp);
+                            else if (peram[i].match(ObjRegex)) { // add objects to the raw data array
+                                if (peram[i].match(ArrayRegex)) {
+                                    let tmp = peram[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g, '');
+                                    token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"));
+                                }
+                                else {
+                                    token.data.data_raw.push(peram[i]);
                                 }
                             }
-                            else {
+                            else { // throw an error if an argument doesn't match the two supported data types
                                 throw `Data Reference Error: ${peram[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`;
                             }
                         }
@@ -255,15 +262,15 @@ export default class Parser {
                 }
             }
         };
-        // Isolate the user generated aguments and concatonate them to a single string
-        let argumetString = args.slice(2, args.length).join("|").trim();
-        // Create an array of strings where each string contains the process and its associated data/perameters
-        this.args = argumetString.split(/(?<![^\|\n])-{1,2}/gs).filter(elem => {
+        // Isolate the user generated augments and concatenate them to a single string
+        let argumentString = args.slice(2, args.length).join("|").trim();
+        // Create an array of strings where each string contains the process and its associated data/parameters
+        this.args = argumentString.split(/(?<![^\|\n])-{1,2}/gs).filter(elem => {
             if (elem != "" && !elem.match(/^\|*$/)) {
                 return elem;
             }
         });
-        // Loop over the perameters
+        // Loop over the parameters
         for (let i = 0; i < this.args.length; i++) {
             let _process = this.args[i].split("|").filter(elem => elem);
             for (let command in this.commands) {
@@ -282,6 +289,7 @@ export default class Parser {
     getTokens() {
         return this.tokens;
     }
+    ;
     generateKVP(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
         if (typeof kvp.match(kvpRegex) !== null) {
