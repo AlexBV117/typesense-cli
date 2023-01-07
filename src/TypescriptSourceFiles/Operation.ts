@@ -1,8 +1,8 @@
 "use strict";
-export class Operation {
-    private h = process.env.HOME;
+export default class Operation {
+    private home = process.env.HOME;
     private typesense = require("typesense");
-    private settings = require(this.h + "/.typesense-cli/typesense-cli.config.json");
+    private settings = require(this.home + "/.typesense-cli/typesense-cli.config.json");
     private node;
     public client;
     // private start_time: Date;

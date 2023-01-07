@@ -11,7 +11,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "clear && tsc && jest"
+    "test": "jest --watchAll=true",
+    "compTest" : "clear && tsc && jest"
   },
   "keywords": [
     "Typesense",

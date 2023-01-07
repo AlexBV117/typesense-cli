@@ -1,5 +1,5 @@
 "Use Strict";
-// Parser Class that generates defined tokens for every passed flag from the command line
+// Parser Class that generates defined tokens for every passed flag from the command line.
 export default class Parser {
     /**
      * Parser Constructor that takes the command line args and then generates the relevant tokens
@@ -9,11 +9,12 @@ export default class Parser {
         this.tokens = [];
         /**
          * An object containing all the functions for processing the command line arguments as tokens
+         * as well as the regex for the identifying flag.
          */
         this.commands = {
             index: {
                 regex: /^(index)$|^(i)$/gm,
-                function: function (peram, parser, _token) {
+                function: function (param, parser, _token) {
                     const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
                     const ObjRegex = /{.*}/gm;
                     const ArrayRegex = /\[[^\[\]]*,?\]/gm;
@@ -31,26 +32,33 @@ export default class Parser {
                             };
                         }
                         else {
+                            /**
+                             *  So that there is not duplicate code for the append and index
+                             *  functions this assigns the append token to be returned by the index function.
+                             */
                             token = _token;
                         }
-                        // The first argument for the index flag is the collection
-                        token.data.collection = peram[0];
-                        // iterate over the remaining args
-                        for (let i = (peram.length - 1); i > 0; i--) {
-                            if (peram[i].match(filePathRegex)) { // add the file paths to the correct array
-                                token.data.data_files.push(peram[i]);
+                        // The first argument for the index flag is the collection.
+                        token.data.collection = param[0];
+                        // Iterate over the remaining args.
+                        for (let i = (param.length - 1); i > 0; i--) {
+                            if (param[i].match(filePathRegex)) { // Add the file paths to the paths array.
+                                token.data.data_files.push(param[i]);
                             }
-                            else if (peram[i].match(ObjRegex)) { // add objects to the raw data array
-                                if (peram[i].match(ArrayRegex)) {
-                                    let tmp = peram[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g, '');
+                            else if (param[i].match(ObjRegex)) { // Add raw json objects to the data array.
+                                if (param[i].match(ArrayRegex)) {
+                                    // This takes any array passed as a string to be appended to the raw data array (allows for rested json objects)
+                                    let tmp = param[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g, '');
                                     token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"));
                                 }
                                 else {
-                                    token.data.data_raw.push(peram[i]);
+                                    // If a single object is passed then just append it to the raw data array
+                                    token.data.data_raw.push(param[i]);
                                 }
                             }
-                            else { // throw an error if an argument doesn't match the two supported data types
-                                throw `Data Reference Error: ${peram[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`;
+                            else {
+                                // Throw an error if an argument doesn't match the two supported data types.
+                                throw `Data Reference Error: ${param[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`;
                             }
                         }
                         return token;
@@ -63,7 +71,7 @@ export default class Parser {
             },
             append: {
                 regex: /^(append)$|^(a)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     let token = {
                         name: "index",
                         data: {
@@ -73,12 +81,16 @@ export default class Parser {
                             data_raw: []
                         }
                     };
-                    return parser.commands.index.function(peram, parser, token);
+                    /**
+                     * The append function contains basically the same logic
+                     * so just passing the token to the index function avoids duplication.
+                     */
+                    return parser.commands.index.function(param, parser, token);
                 }
             },
             schemas: {
                 regex: /^(schemas)$|^(s)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     try {
                         let token = {
                             name: "schemas",
@@ -94,7 +106,7 @@ export default class Parser {
             },
             version: {
                 regex: /^(version)$|^(v)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     try {
                         let token = {
                             name: "version",
@@ -110,7 +122,7 @@ export default class Parser {
             },
             server: {
                 regex: /^(server)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     try {
                         let token = {
                             name: "server",
@@ -126,7 +138,7 @@ export default class Parser {
             },
             collections: {
                 regex: /^(collections)$|^(c)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     try {
                         let token = {
                             name: "collection",
@@ -136,20 +148,20 @@ export default class Parser {
                                 remove: false
                             },
                         };
-                        if (peram.includes("new")) {
+                        if (param.includes("new")) {
                             token.data.new = true;
-                            let index = peram.lastIndexOf("new");
-                            peram.splice(index, 1);
+                            let index = param.lastIndexOf("new");
+                            param.splice(index, 1);
                         }
-                        if (peram.includes("remove")) {
+                        if (param.includes("remove")) {
                             token.data.remove = true;
-                            let index = peram.lastIndexOf("remove");
-                            peram.splice(index, 1);
+                            let index = param.lastIndexOf("remove");
+                            param.splice(index, 1);
                         }
                         if (token.data.new && token.data.remove) {
                             throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                         }
-                        token.data.name = token.data.name.concat(peram);
+                        token.data.name = token.data.name.concat(param);
                         return token;
                     }
                     catch (error) {
@@ -160,7 +172,7 @@ export default class Parser {
             },
             keys: {
                 regex: /^(key)$|^(k)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     try {
                         let token = {
                             name: "key",
@@ -175,50 +187,52 @@ export default class Parser {
                                 remove: false
                             }
                         };
-                        if (peram.includes("new")) {
+                        // Detect and remove the "new" and "remove" key words
+                        if (param.includes("new")) {
                             token.data.new = true;
-                            let index = peram.lastIndexOf("new");
-                            peram.splice(index, 1);
+                            let index = param.lastIndexOf("new");
+                            param.splice(index, 1);
                         }
-                        if (peram.includes("remove")) {
+                        if (param.includes("remove")) {
                             token.data.remove = true;
-                            let index = peram.lastIndexOf("remove");
-                            peram.splice(index, 1);
+                            let index = param.lastIndexOf("remove");
+                            param.splice(index, 1);
                         }
+                        // Obviously a conflict so throw dat error
                         if (token.data.new === true && token.data.remove === true) {
                             throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                         }
-                        for (let i = peram.length - 1; i >= 0; i--) {
-                            let kvp = parser.generateKVP(peram[i]);
+                        for (let i = param.length - 1; i >= 0; i--) {
+                            let kvp = parser.generateKVP(param[i]); // Create a key value pair for the args passed
                             if (kvp !== null) {
                                 switch (kvp[0]) {
                                     case "actions": {
-                                        token.data.actions = token.data.actions.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(" ", "").split(','));
+                                        token.data.actions = token.data.actions.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(/\s/gm, "").split(','));
                                         break;
                                     }
                                     case "collections": {
-                                        token.data.collections = token.data.collections.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(" ", "").split(','));
+                                        token.data.collections = token.data.collections.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(/\s/gm, "").split(','));
                                         break;
                                     }
                                     case "description": {
-                                        token.data.description = kvp[1].replace(/\"/g, "");
+                                        token.data.description = kvp[1].replace(/['"`]/gm, "");
                                         break;
                                     }
                                     case "value": {
-                                        token.data.value = kvp[1].replace(/\"/g, "");
+                                        token.data.value = kvp[1].replace(/['"`]/gm, "");
                                         break;
                                     }
                                     case "expiresAt": {
-                                        token.data.expiresAt = kvp[1].replace(/\"/g, "");
+                                        token.data.expiresAt = kvp[1].replace(/['"`]/gm, "");
                                         break;
                                     }
                                     case "id": {
-                                        const num = Number(kvp[1].replace(/\"/g, ""));
+                                        const num = Number(kvp[1].replace(/['"`]/gm, ""));
                                         if (isNaN(num)) {
                                             throw "Type Error: id provided is not a valid number";
                                         }
                                         else
-                                            token.data.id = Number(kvp[1].replace(/\"/g, ""));
+                                            token.data.id = Number(kvp[1].replace(/['"`]/gm, ""));
                                         break;
                                     }
                                     default: {
@@ -237,7 +251,7 @@ export default class Parser {
             },
             help: {
                 regex: /^(help)$|^(h)$/gm,
-                function: function (peram, parser) {
+                function: function (param, parser) {
                     try {
                         let token = {
                             name: "help",
@@ -290,11 +304,20 @@ export default class Parser {
         return this.tokens;
     }
     ;
+    /**
+     * Generates an array of length 2 from a string that maps a know word to a set of data
+     * @param kvp String that needs to be split into a kvp
+     * @returns Null if the sting doesn't match the regex or an array where the first item is the key and the second item is the value
+     */
     generateKVP(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
         if (typeof kvp.match(kvpRegex) !== null) {
             let result_array = kvp.split('=').filter(elem => elem).slice(0, 2);
-            return result_array;
+            if (result_array.length != 2) {
+                return null;
+            }
+            else
+                return result_array;
         }
         else {
             return null;

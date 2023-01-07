@@ -2,9 +2,9 @@
   "compilerOptions": { 
 	  "baseUrl": ".",
 	  "paths": {
-		"@Modules/*": ["src/Modules/*"],
-		"@Config/*": ["config/*"],
-		"@Interfaces/*" : ["src/TypescriptSourceFiles/Interfaces/*"]
+		"@Modules/*": ["./src/TypescriptSourceFiles/*"],
+		"@Config/*": ["./config/*"],
+		"@Interfaces/*" : ["./src/TypescriptSourceFiles/Interfaces/*"]
 	  },
 	  "outDir": "src/Modules",
 	  "rootDir": "src/TypescriptSourceFiles",
@@ -16,6 +16,7 @@
 	  "skipLibCheck": true                                 
   },
   "exclude": [
+	"./src/TypescriptSourceFiles/Interfaces/*",
 	"refactor/cmdFunctions.ts",
 	"refactor/setup.ts",
 	"jest.config.ts"
