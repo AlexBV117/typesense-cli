@@ -5,7 +5,7 @@ export default class Parser {
      * Parser Constructor that takes the command line args and then generates the relevant tokens
      * @param args The command line arguments from the process
      */
-    constructor(args) {
+    constructor(args, rootPath) {
         this.tokens = [];
         /**
          * An object containing all the functions for processing the command line arguments as tokens
@@ -48,7 +48,7 @@ export default class Parser {
                             else if (param[i].match(ObjRegex)) { // Add raw json objects to the data array.
                                 if (param[i].match(ArrayRegex)) {
                                     // This takes any array passed as a string to be appended to the raw data array (allows for rested json objects)
-                                    let tmp = param[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g, '');
+                                    const tmp = param[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g, '');
                                     token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"));
                                 }
                                 else {
@@ -72,7 +72,7 @@ export default class Parser {
             append: {
                 regex: /^(append)$|^(a)$/gm,
                 function: function (param, parser) {
-                    let token = {
+                    const token = {
                         name: "index",
                         data: {
                             append: true,
@@ -92,7 +92,7 @@ export default class Parser {
                 regex: /^(schemas)$|^(s)$/gm,
                 function: function (param, parser) {
                     try {
-                        let token = {
+                        const token = {
                             name: "schemas",
                             data: {},
                         };
@@ -108,7 +108,7 @@ export default class Parser {
                 regex: /^(version)$|^(v)$/gm,
                 function: function (param, parser) {
                     try {
-                        let token = {
+                        const token = {
                             name: "version",
                             data: {}
                         };
@@ -124,7 +124,7 @@ export default class Parser {
                 regex: /^(server)$/gm,
                 function: function (param, parser) {
                     try {
-                        let token = {
+                        const token = {
                             name: "server",
                             data: {}
                         };
@@ -140,7 +140,7 @@ export default class Parser {
                 regex: /^(collections)$|^(c)$/gm,
                 function: function (param, parser) {
                     try {
-                        let token = {
+                        const token = {
                             name: "collection",
                             data: {
                                 name: [],
@@ -150,12 +150,12 @@ export default class Parser {
                         };
                         if (param.includes("new")) {
                             token.data.new = true;
-                            let index = param.lastIndexOf("new");
+                            const index = param.lastIndexOf("new");
                             param.splice(index, 1);
                         }
                         if (param.includes("remove")) {
                             token.data.remove = true;
-                            let index = param.lastIndexOf("remove");
+                            const index = param.lastIndexOf("remove");
                             param.splice(index, 1);
                         }
                         if (token.data.new && token.data.remove) {
@@ -174,7 +174,7 @@ export default class Parser {
                 regex: /^(key)$|^(k)$/gm,
                 function: function (param, parser) {
                     try {
-                        let token = {
+                        const token = {
                             name: "key",
                             data: {
                                 actions: [],
@@ -190,12 +190,12 @@ export default class Parser {
                         // Detect and remove the "new" and "remove" key words
                         if (param.includes("new")) {
                             token.data.new = true;
-                            let index = param.lastIndexOf("new");
+                            const index = param.lastIndexOf("new");
                             param.splice(index, 1);
                         }
                         if (param.includes("remove")) {
                             token.data.remove = true;
-                            let index = param.lastIndexOf("remove");
+                            const index = param.lastIndexOf("remove");
                             param.splice(index, 1);
                         }
                         // Obviously a conflict so throw dat error
@@ -203,7 +203,7 @@ export default class Parser {
                             throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                         }
                         for (let i = param.length - 1; i >= 0; i--) {
-                            let kvp = parser.generateKVP(param[i]); // Create a key value pair for the args passed
+                            const kvp = parser.generateKVP(param[i]); // Create a key value pair for the args passed
                             if (kvp !== null) {
                                 switch (kvp[0]) {
                                     case "actions": {
@@ -253,19 +253,18 @@ export default class Parser {
                 regex: /^(help)$|^(h)$/gm,
                 function: function (param, parser) {
                     try {
-                        let token = {
+                        const token = {
                             name: "help",
                             data: {
                                 path: ""
                             }
                         };
-                        const tmp = __dirname.match(/^(\/.*\/typesense-cli)/gm);
-                        if (tmp !== null) {
-                            let path = tmp[0];
-                            token.data.path = path + "/config/help.txt";
+                        console.log(parser._home);
+                        if (parser._home === null || parser._home === undefined) {
+                            throw "Unresolved Path Error: unable to generate the path to the help.txt file";
                         }
                         else {
-                            throw "Unresolved Path Error: unable to generate the path to the help.txt file";
+                            token.data.path = parser._home + "/config/help.txt";
                         }
                         return token;
                     }
@@ -276,8 +275,14 @@ export default class Parser {
                 }
             }
         };
+        if (typeof rootPath !== "undefined") {
+            this._home = rootPath;
+        }
+        else {
+            this._home = this.setRootDirPath();
+        }
         // Isolate the user generated augments and concatenate them to a single string
-        let argumentString = args.slice(2, args.length).join("|").trim();
+        const argumentString = args.slice(2, args.length).join("|").trim();
         // Create an array of strings where each string contains the process and its associated data/parameters
         this.args = argumentString.split(/(?<![^\|\n])-{1,2}/gs).filter(elem => {
             if (elem != "" && !elem.match(/^\|*$/)) {
@@ -286,10 +291,10 @@ export default class Parser {
         });
         // Loop over the parameters
         for (let i = 0; i < this.args.length; i++) {
-            let _process = this.args[i].split("|").filter(elem => elem);
-            for (let command in this.commands) {
+            const _process = this.args[i].split("|").filter(elem => elem);
+            for (const command in this.commands) {
                 if (_process[0].match(this.commands[command].regex)) {
-                    let token = this.commands[command].function(_process.slice(1, _process.length), this);
+                    const token = this.commands[command].function(_process.slice(1, _process.length), this);
                     if (token != null) {
                         this.tokens.push(token);
                     }
@@ -298,11 +303,11 @@ export default class Parser {
             }
         }
         ;
-        console.log(this.tokens[0]);
     }
     getTokens() {
         return this.tokens;
     }
+    ;
     ;
     /**
      * Generates an array of length 2 from a string that maps a know word to a set of data
@@ -312,7 +317,7 @@ export default class Parser {
     generateKVP(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
         if (typeof kvp.match(kvpRegex) !== null) {
-            let result_array = kvp.split('=').filter(elem => elem).slice(0, 2);
+            const result_array = kvp.split('=').filter(elem => elem).slice(0, 2);
             if (result_array.length != 2) {
                 return null;
             }
@@ -322,5 +327,22 @@ export default class Parser {
         else {
             return null;
         }
+    }
+    ;
+    setRootDirPath() {
+        let result = "";
+        try {
+            const tmp1 = __dirname.match(/^(\/.*\/typesense-cli)/gm);
+            if (tmp1 === null) {
+                throw "Unresolved Path Error: unable to generate definitive path to the typesense-cli dir";
+            }
+            else {
+                result = tmp1[0];
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+        return result;
     }
 }

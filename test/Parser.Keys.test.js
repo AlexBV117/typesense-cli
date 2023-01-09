@@ -22,6 +22,7 @@ test("Test => Parser => Keys => Normal new args", () => {
         '--key',
         'new',
         'actions="[collections:get, documents:get]"',
+        'actions="collections:get,documents:get"',
         'collections="[auto]"',
         'description="test key that wont break the parser"',
         'value="Ek?eLs@#ze$8N4gN"',
@@ -35,7 +36,7 @@ test("Test => Parser => Keys => Normal new args", () => {
 
     expect(token.data.actions).toContain("collections:get");
     expect(token.data.actions).toContain("documents:get");
-    expect(token.data.actions.length).toBe(2);
+    expect(token.data.actions.length).toBe(4);
 
     expect(token.data.collections).toContain("auto");
     expect(token.data.collections.length).toBe(1);

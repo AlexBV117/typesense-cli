@@ -1,4 +1,4 @@
-"Use Strict"
+"Use Strict";
 /**
  * Import Interfaces Here:
  */
@@ -26,7 +26,7 @@ export default class Parser {
             function : function(param: string[], parser: Parser, _token?: Index_Token) {
                 const filePathRegex: RegExp = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
                 const ObjRegex: RegExp = /{.*}/gm;
-                const ArrayRegex: RegExp = /\[[^\[\]]*,?\]/gm
+                const ArrayRegex: RegExp = /\[[^\[\]]*,?\]/gm;
                 try {
                     let token: Index_Token;
                     if(typeof _token === 'undefined'){
@@ -44,7 +44,7 @@ export default class Parser {
                          *  So that there is not duplicate code for the append and index
                          *  functions this assigns the append token to be returned by the index function.
                          */ 
-                        token = _token 
+                        token = _token;
                     }
                     // The first argument for the index flag is the collection.
                     token.data.collection = param[0];
@@ -55,28 +55,28 @@ export default class Parser {
                         }else if(param[i].match(ObjRegex)){                    // Add raw json objects to the data array.
                             if(param[i].match(ArrayRegex)){
                                 // This takes any array passed as a string to be appended to the raw data array (allows for rested json objects)
-                                let tmp = param[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g,'');
-                                token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"))
+                                const tmp = param[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g,'');
+                                token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"));
                             } else {
                                 // If a single object is passed then just append it to the raw data array
-                                token.data.data_raw.push(param[i])
+                                token.data.data_raw.push(param[i]);
                             }
                         } else { 
                             // Throw an error if an argument doesn't match the two supported data types.
                             throw `Data Reference Error: ${param[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`
                         }
                     }
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         },
         append : {
             regex : /^(append)$|^(a)$/gm,
             function : function(param: string[], parser: Parser) {
-                let token: Index_Token = {
+                const token: Index_Token = {
                     name: "index",
                     data: {
                         append: true,
@@ -96,14 +96,14 @@ export default class Parser {
             regex : /^(schemas)$|^(s)$/gm,
             function : function(param: string[], parser: Parser) {
                 try {
-                    let token: Schemas_Token = {
+                    const token: Schemas_Token = {
                         name: "schemas",
                         data: {},
                     }
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         },
@@ -111,14 +111,14 @@ export default class Parser {
             regex : /^(version)$|^(v)$/gm,
             function : function(param: string[], parser: Parser) {
                 try {
-                    let token: Version_Token = {
+                    const token: Version_Token = {
                         name:  "version",
                         data: {}
                     }
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         },
@@ -126,14 +126,14 @@ export default class Parser {
             regex : /^(server)$/gm,
             function : function(param: string[], parser: Parser) {
                 try {
-                    let token: Server_Token = {
+                    const token: Server_Token = {
                         name: "server",
                         data: {}
                     }
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         },
@@ -141,7 +141,7 @@ export default class Parser {
             regex : /^(collections)$|^(c)$/gm,
             function : function(param: string[], parser: Parser) {
                 try {
-                    let token: Collection_Token = {
+                    const token: Collection_Token = {
                         name: "collection",
                         data: {
                             name: [],
@@ -151,22 +151,22 @@ export default class Parser {
                     }
                     if(param.includes("new")){
                         token.data.new = true;
-                        let index = param.lastIndexOf("new");
+                        const index = param.lastIndexOf("new");
                         param.splice(index, 1);
                     }
                     if (param.includes("remove")) {
                         token.data.remove = true;
-                        let index = param.lastIndexOf("remove");
+                        const index = param.lastIndexOf("remove");
                         param.splice(index, 1);
                     }
                     if(token.data.new && token.data.remove){
-                        throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed"
+                        throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                     }
                     token.data.name = token.data.name.concat(param)
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         },
@@ -174,7 +174,7 @@ export default class Parser {
             regex : /^(key)$|^(k)$/gm,
             function : function(param: string[], parser: Parser) {
                 try {
-                    let token: Keys_Token = {
+                    const token: Keys_Token = {
                         name: "key",
                         data: {
                             actions: [],
@@ -190,20 +190,20 @@ export default class Parser {
                     // Detect and remove the "new" and "remove" key words
                     if(param.includes("new")){
                         token.data.new = true;
-                        let index = param.lastIndexOf("new");
+                        const index = param.lastIndexOf("new");
                         param.splice(index, 1);
                     }
                     if (param.includes("remove")) {
                         token.data.remove = true;
-                        let index = param.lastIndexOf("remove");
+                        const index = param.lastIndexOf("remove");
                         param.splice(index, 1);
                     }
                     // Obviously a conflict so throw dat error
                     if(token.data.new === true && token.data.remove === true){
-                        throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed"
+                        throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
                     }
                     for(let i = param.length-1; i >= 0; i--){
-                        let kvp = parser.generateKVP(param[i]); // Create a key value pair for the args passed
+                        const kvp = parser.generateKVP(param[i]); // Create a key value pair for the args passed
                         if(kvp !== null){
                             switch(kvp[0]){
                                 case "actions": {
@@ -227,23 +227,23 @@ export default class Parser {
                                     break;
                                 }
                                 case "id": {
-                                    const num = Number(kvp[1].replace(/['"`]/gm, ""))
+                                    const num = Number(kvp[1].replace(/['"`]/gm, ""));
                                     if(isNaN(num)){
-                                        throw "Type Error: id provided is not a valid number"
+                                        throw "Type Error: id provided is not a valid number";
                                     } else
-                                    token.data.id = Number(kvp[1].replace(/['"`]/gm, ""))
+                                    token.data.id = Number(kvp[1].replace(/['"`]/gm, ""));
                                     break;
                                 }
                                 default: {
-                                    throw `Undefined Argument Error: \"${kvp}\" is not a supported value for key data`
+                                    throw `Undefined Argument Error: \"${kvp}\" is not a supported value for key data`;
                                 }
                             }
                         }
                     }
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         },
@@ -251,7 +251,7 @@ export default class Parser {
             regex : /^(help)$|^(h)$/gm,
             function : function(param: string[], parser: Parser) {
                 try {
-                    let token: Help_Token = {
+                    const token: Help_Token = {
                         name: "help",
                         data: {
                             path: ""
@@ -264,10 +264,10 @@ export default class Parser {
                     } else {
                         throw "Unresolved Path Error: unable to generate the path to the help.txt file"
                     }
-                    return token
+                    return token;
                 } catch (error) {
-                    console.error(error)
-                    return null
+                    console.error(error);
+                    return null;
                 }
             }
         }
@@ -278,7 +278,7 @@ export default class Parser {
      */
     constructor(args: string[]) {
         // Isolate the user generated augments and concatenate them to a single string
-        let argumentString: string = args.slice(2,args.length).join("|").trim();
+        const argumentString: string = args.slice(2,args.length).join("|").trim();
         // Create an array of strings where each string contains the process and its associated data/parameters
         this.args = argumentString.split(/(?<![^\|\n])-{1,2}/gs).filter(elem => {
             if(elem != "" && ! elem.match(/^\|*$/)){
@@ -286,32 +286,31 @@ export default class Parser {
             }});
         // Loop over the parameters
         for(let i = 0; i < this.args.length; i++){
-            let _process: string[] = this.args[i].split("|").filter(elem => elem)
-            for(let command in this.commands){
+            const _process: string[] = this.args[i].split("|").filter(elem => elem);
+            for(const command in this.commands){
                 if(_process[0].match(this.commands[command as keyof typeof this.commands].regex)){
-                    let token = this.commands[command as keyof typeof this.commands].function(_process.slice(1, _process.length), this);
+                    const token = this.commands[command as keyof typeof this.commands].function(_process.slice(1, _process.length), this);
                     if(token != null){
-                        this.tokens.push(token)
+                        this.tokens.push(token);
                     }
                 };
             }
         };
-        console.log(this.tokens[0])
-    }
+    };
     /**
      * Generates an array of length 2 from a string that maps a know word to a set of data
      * @param kvp String that needs to be split into a kvp
      * @returns Null if the sting doesn't match the regex or an array where the first item is the key and the second item is the value 
      */
     private generateKVP(kvp: string): Array<string> | null {
-        const kvpRegex = /[^=]*=[^=]*/gm
+        const kvpRegex = /[^=]*=[^=]*/gm;
         if(typeof kvp.match(kvpRegex) !== null){
-            let result_array = kvp.split('=').filter(elem => elem).slice(0,2)
+            const result_array = kvp.split('=').filter(elem => elem).slice(0,2);
             if(result_array.length != 2){return null}
-            else return result_array
+            else return result_array;
         }
         else{
-            return null
+            return null;
         }
-    }
+    };
 }
