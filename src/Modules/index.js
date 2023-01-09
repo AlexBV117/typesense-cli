@@ -1,11 +1,11 @@
 "Use Strict";
 import Parser from "./Parser";
-import Index from "./Index-files";
+import IndexDocuments from './IndexDocuments';
 import fs from "fs";
 let _home;
 let start_time;
 let finish_time;
-export async function run(args) {
+async function run(args) {
     start_time = new Date();
     await setRootDirPath().then((value) => {
         if (typeof value === "string") {
@@ -15,8 +15,8 @@ export async function run(args) {
         console.log(err);
         process.exit(1);
     });
-    const parser = new Parser(args, _home);
-    const tokens = parser.getTokens();
+    const parser = new Parser(args);
+    const tokens = await parser.getTokens();
     tokens.forEach((token) => {
         processToken(token);
     });
@@ -26,7 +26,7 @@ export async function run(args) {
 function processToken(token) {
     switch (token.name) {
         case "index": {
-            const index = new Index(token);
+            const index = new IndexDocuments(token, _home);
             console.log("index");
             break;
         }
@@ -67,7 +67,7 @@ function setRootDirPath() {
             else {
                 result = tmp2 + "/.typesense-cli";
                 if (!fs.existsSync(result)) {
-                    throw `Unresolved Path Error: ${result} doesn't exist in the users home directory falling back to defaults`;
+                    throw `Unresolved Path Error: ${result} doesn't exist falling back to defaults`;
                 }
             }
         }
