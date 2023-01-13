@@ -1,57 +1,66 @@
 "Use Strict";
+import IndexDocuments from "./IndexDocuments";
+import Collection from "./Collections";
+import Schemas from "./Schemas";
+import Version from "./Version";
 import Parser from "./Parser";
-import IndexDocuments from './IndexDocuments';
+import Server from "./Server";
+import Help from "./Help";
+import Key from "./Key";
 import fs from "fs";
 let _home;
 let start_time;
 let finish_time;
-async function run(args) {
+export async function run(args) {
     start_time = new Date();
     await setRootDirPath().then((value) => {
         if (typeof value === "string") {
             _home = value;
         }
-    }, (err) => {
-        console.log(err);
+    }, (error) => {
+        console.error(error);
         process.exit(1);
     });
+    const result = fs.readFileSync(_home + '/config/title.txt', 'utf-8');
+    console.log(result);
     const parser = new Parser(args);
     const tokens = await parser.getTokens();
-    tokens.forEach((token) => {
-        processToken(token);
-    });
+    for (let i = tokens.length - 1; i >= 0; i--) {
+        await processToken(tokens[i]);
+    }
+    ;
     finish_time = new Date();
     console.log(timeTaken());
 }
-function processToken(token) {
+async function processToken(token) {
     switch (token.name) {
         case "index": {
-            const index = new IndexDocuments(token, _home);
-            console.log("index");
+            const indexDocuments = new IndexDocuments(token, _home);
+            await indexDocuments.processToken().then((data) => { }, (error) => { console.error(error); });
             break;
         }
         case "collection": {
-            console.log("collection");
+            const collection = new Collection(token, _home);
             break;
         }
         case "help": {
-            console.log("help");
+            const help = new Help(token, _home);
             break;
         }
         case "key": {
-            console.log("key");
+            const key = new Key(token, _home);
             break;
         }
         case "schemas": {
-            console.log("schemas");
+            const schemas = new Schemas(token, _home);
             break;
         }
         case "server": {
-            console.log("server");
+            const server = new Server(token, _home);
             break;
         }
         case "version": {
-            console.log("version");
+            const version = new Version(token, _home);
             break;
         }
     }

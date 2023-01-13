@@ -8,18 +8,8 @@ export default class Help extends Operation {
         try {
             const token = {
                 name: "help",
-                data: {
-                    path: ""
-                }
+                data: {}
             };
-            const tmp = __dirname.match(/^(\/.*\/typesense-cli)/gm);
-            if (tmp !== null) {
-                let path = tmp[0];
-                token.data.path = path + "/config/help.txt";
-            }
-            else {
-                throw "Unresolved Path Error: unable to generate the path to the help.txt file";
-            }
             return token;
         }
         catch (error) {

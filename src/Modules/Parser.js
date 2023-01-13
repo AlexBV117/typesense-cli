@@ -81,7 +81,7 @@ export default class Parser {
         });
         // Loop over the parameters
         for (let i = 0; i < this.args.length; i++) {
-            const _process = this.args[i].split("|").filter(elem => elem);
+            let _process = this.args[i].split("|").filter(elem => elem);
             for (const command in this.commands) {
                 if (_process[0].match(this.commands[command].regex)) {
                     const token = this.commands[command].function(_process.slice(1, _process.length));

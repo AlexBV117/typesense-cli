@@ -1,8 +1,9 @@
 "Use Strict";
 import Operation from './Operation';
 export default class IndexDocuments extends Operation {
-    constructor(token, home) {
-        super(home);
+    constructor(token, homeDir) {
+        super(homeDir);
+        this.token = token;
     }
     static parse(args, _append) {
         const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
@@ -49,6 +50,40 @@ export default class IndexDocuments extends Operation {
         catch (error) {
             console.error(error);
             return null;
+        }
+    }
+    async processToken() {
+        return new Promise(async (resolve, reject) => {
+            let _schema;
+            if (!this.schemas.hasOwnProperty(this.token.data.collection)) {
+                reject(`Collection Error: ${this.token.data.collection} is not defined in the schemas.json`);
+                return;
+            }
+            else {
+                _schema = this.schemas[this.token.data.collection];
+                console.log(_schema);
+            }
+        });
+    }
+    async refreshCollections(_schema) {
+        let _collection;
+        _collection = await this.client.collections().retrieve();
+        if (!_collection.includes(this.token.data.collection)) {
+            this.client.collections().create(_schema).then(() => {
+                console.log(`create <tmp>`);
+            }, (error) => { console.error(error); });
+        }
+        else if (!this.token.data.append) {
+            await this.client.collections(this.token.data.collection).delete().then(() => {
+                console.log(`Delete <tmp>`);
+            }, (error) => {
+                console.error(error);
+            });
+            ;
+            await this.client.collection().create(_schema).then(() => {
+                console.log(`create <tmp>`);
+            }, (error) => { console.error(error); });
+            ;
         }
     }
 }

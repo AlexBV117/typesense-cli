@@ -1,4 +1,4 @@
 export default interface Version_Token {
-    name: "version",
-    data: {}
+  name: "version";
+  data: {};
 }

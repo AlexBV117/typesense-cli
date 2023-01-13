@@ -9,7 +9,6 @@ test("Test => Parser => Help => Normal", () => {
     const parser = new Parser(args);
     const tokens = parser.getTokens();
     expect(tokens[0].name).toBe("help");
-    expect(tokens[0].data.path).toMatch(/(?:\/[^\\\/]+)+\/config\/help\.txt/gm);
     expect(tokens.length).toBe(1);
 });
 
@@ -22,7 +21,6 @@ test("Test => Parser => Help => Shorthand", () => {
     const parser = new Parser(args);
     const tokens = parser.getTokens();
     expect(tokens[0].name).toBe("help");
-    expect(tokens[0].data.path).toMatch(/(?:\/[^\\\/]+)+\/config\/help\.txt/gm);
     expect(tokens.length).toBe(1);
 });
 

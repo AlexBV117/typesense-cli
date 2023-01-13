@@ -4,9 +4,10 @@ export default class Operation {
         this.typesense = require("typesense");
         this._home = home;
         this.settings = require(home + "/config/typesense-cli.config.json");
+        this.schemas = require(home + "/config/schemas.json");
         this.node = this.settings.serverNode; // typesense server node specified in the config file
         this.client = new this.typesense.Client(this.node); // client to be used for process
-        if (this.client == null || this.client == undefined) {
+        if (this.client === null || this.client === undefined) {
             console.error("Error: Unable to create client.");
         }
     }

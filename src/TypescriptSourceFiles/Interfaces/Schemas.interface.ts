@@ -1,4 +1,4 @@
 export default interface Schemas_Token {
-    name: "schemas",
-    data: {}
+  name: "schemas";
+  data: {};
 }
