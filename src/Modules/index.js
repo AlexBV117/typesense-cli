@@ -13,22 +13,26 @@ let start_time;
 let finish_time;
 export async function run(args) {
     start_time = new Date();
+    // Locate the directory containing the user configuration
     await setRootDirPath().then((value) => {
         if (typeof value === "string") {
             _home = value;
         }
-    }, (error) => {
-        console.error(error);
+    }, () => {
+        console.error("Critical Error: Unable to locate the required configuration files. Ending process");
         process.exit(1);
     });
-    const result = fs.readFileSync(_home + '/config/title.txt', 'utf-8');
-    console.log(result);
+    // Read and then display the typesense cli title
+    const title = fs.readFileSync(_home + "/config/title.txt", "utf-8");
+    console.log(title);
+    //***********************//
+    //   Main Process Time   //
+    //***********************//
     const parser = new Parser(args);
     const tokens = await parser.getTokens();
     for (let i = tokens.length - 1; i >= 0; i--) {
         await processToken(tokens[i]);
     }
-    ;
     finish_time = new Date();
     console.log(timeTaken());
 }
@@ -36,7 +40,9 @@ async function processToken(token) {
     switch (token.name) {
         case "index": {
             const indexDocuments = new IndexDocuments(token, _home);
-            await indexDocuments.processToken().then((data) => { }, (error) => { console.error(error); });
+            await indexDocuments.processToken().then((data) => { }, (error) => {
+                console.error(error);
+            });
             break;
         }
         case "collection": {
@@ -67,31 +73,35 @@ async function processToken(token) {
 }
 function setRootDirPath() {
     return new Promise((resolve, reject) => {
-        let result = "";
+        let result = "~/.typesense-cli"; // Default home path for user configuration
         try {
+            // First try and resolve the full path to the users home directory
             const tmp2 = process.env.HOME;
             if (tmp2 === undefined) {
-                throw "Unresolved Path Error: unable to generate definitive path to the user home directory";
+                throw "Unresolved Path Error: Unable to locate the users configuration directory.";
             }
             else {
                 result = tmp2 + "/.typesense-cli";
+                // Has the user created a configuration file / directory
                 if (!fs.existsSync(result)) {
-                    throw `Unresolved Path Error: ${result} doesn't exist falling back to defaults`;
+                    throw `Unresolved Path Error: ${result} doesn't exist falling back to defaults.`;
                 }
             }
         }
         catch (error) {
             console.error(error);
             try {
+                // If the users home directory cant be found then try and find the default config file
                 const tmp1 = __dirname.match(/^(\/.*\/typesense-cli)/gm);
                 if (tmp1 === null) {
-                    throw "Unresolved Path Error: unable to generate definitive path to the typesense-cli dir";
+                    throw "Unresolved Path Error: Unable to locate the default configuration directory.";
                 }
                 else {
                     result = tmp1[0];
                 }
             }
             catch (error) {
+                // If all else fails reject the promise.
                 console.error(error);
                 reject();
             }
@@ -109,12 +119,12 @@ function timeTaken() {
     let x;
     if (time >= 60000) {
         x = time / 60000;
-        response = `${x.toFixed(2)} minute${(x == 1) ? "" : "s"}`;
+        response = `${x.toFixed(2)} minute${x == 1 ? "" : "s"}`;
         return response;
     }
     else {
         x = time / 1000;
-        response = `${x.toFixed(2)} second${(x == 1) ? "" : "s"}`;
+        response = `${x.toFixed(2)} second${x == 1 ? "" : "s"}`;
         return response;
     }
 }

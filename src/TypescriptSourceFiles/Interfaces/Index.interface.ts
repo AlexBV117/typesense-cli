@@ -1,3 +1,4 @@
+import IndexDocuments from "../IndexDocuments";
 export default interface Index_Token {
   name: "index";
   data: {

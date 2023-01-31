@@ -1,5 +1,5 @@
 "Use Strict";
-import Operation from './Operation';
+import Operation from "./Operation";
 export default class IndexDocuments extends Operation {
     constructor(token, homeDir) {
         super(homeDir);
@@ -16,8 +16,8 @@ export default class IndexDocuments extends Operation {
                     append: false,
                     collection: "",
                     data_files: [],
-                    data_raw: []
-                }
+                    data_raw: [],
+                },
             };
             if (_append === true) {
                 token.data.append = true;
@@ -25,14 +25,18 @@ export default class IndexDocuments extends Operation {
             // The first argument for the index flag is the collection.
             token.data.collection = args[0];
             // Iterate over the remaining args.
-            for (let i = (args.length - 1); i > 0; i--) {
-                if (args[i].match(filePathRegex)) { // Add the file paths to the paths array.
+            for (let i = args.length - 1; i > 0; i--) {
+                if (args[i].match(filePathRegex)) {
+                    // Add the file paths to the paths array.
                     token.data.data_files.push(args[i]);
                 }
-                else if (args[i].match(ObjRegex)) { // Add raw json objects to the data array.
+                else if (args[i].match(ObjRegex)) {
+                    // Add raw json objects to the data array.
                     if (args[i].match(ArrayRegex)) {
                         // This takes any array passed as a string to be appended to the raw data array (allows for rested json objects)
-                        const tmp = args[i].replace(/}[\s]?,[\s]?{/gm, "}<comma>{").replace(/\"\[|\]\"/g, '');
+                        const tmp = args[i]
+                            .replace(/}[\s]?,[\s]?{/gm, "}<comma>{")
+                            .replace(/\"\[|\]\"/g, "");
                         token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"));
                     }
                     else {
@@ -61,7 +65,7 @@ export default class IndexDocuments extends Operation {
             }
             else {
                 _schema = this.schemas[this.token.data.collection];
-                console.log(_schema);
+                this.refreshCollections(_schema);
             }
         });
     }
@@ -69,21 +73,32 @@ export default class IndexDocuments extends Operation {
         let _collection;
         _collection = await this.client.collections().retrieve();
         if (!_collection.includes(this.token.data.collection)) {
-            this.client.collections().create(_schema).then(() => {
+            this.client
+                .collections()
+                .create(_schema)
+                .then(() => {
                 console.log(`create <tmp>`);
-            }, (error) => { console.error(error); });
+            }, (error) => {
+                console.error(error);
+            });
         }
         else if (!this.token.data.append) {
-            await this.client.collections(this.token.data.collection).delete().then(() => {
+            await this.client
+                .collections(this.token.data.collection)
+                .delete()
+                .then(() => {
                 console.log(`Delete <tmp>`);
             }, (error) => {
                 console.error(error);
             });
-            ;
-            await this.client.collection().create(_schema).then(() => {
+            await this.client
+                .collection()
+                .create(_schema)
+                .then(() => {
                 console.log(`create <tmp>`);
-            }, (error) => { console.error(error); });
-            ;
+            }, (error) => {
+                console.error(error);
+            });
         }
     }
 }

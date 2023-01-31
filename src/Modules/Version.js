@@ -8,7 +8,7 @@ export default class Version extends Operation {
         try {
             const token = {
                 name: "version",
-                data: {}
+                data: {},
             };
             return token;
         }
@@ -18,4 +18,3 @@ export default class Version extends Operation {
         }
     }
 }
-;

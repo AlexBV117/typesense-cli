@@ -11,7 +11,7 @@ export default class Collection extends Operation {
                 data: {
                     name: [],
                     new: false,
-                    remove: false
+                    remove: false,
                 },
             };
             if (args.includes("new")) {
@@ -25,7 +25,7 @@ export default class Collection extends Operation {
                 args.splice(index, 1);
             }
             if (token.data.new && token.data.remove) {
-                throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
+                throw 'Inconsistency Error: Both "new" and "remove" keywords have been passed';
             }
             token.data.name = token.data.name.concat(args);
             return token;

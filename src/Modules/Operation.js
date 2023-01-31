@@ -1,4 +1,4 @@
-"use strict";
+("use strict");
 export default class Operation {
     constructor(home) {
         this.typesense = require("typesense");
@@ -12,14 +12,17 @@ export default class Operation {
         }
     }
     /**
-    * Generates an array of length 2 from a string that maps a know word to a set of data
-    * @param kvp String that needs to be split into a kvp
-    * @returns Null if the sting doesn't match the regex or an array where the first item is the key and the second item is the value
-    */
+     * Generates an array of length 2 from a string that maps a know word to a set of data
+     * @param kvp String that needs to be split into a kvp
+     * @returns Null if the sting doesn't match the regex or an array where the first item is the key and the second item is the value
+     */
     static generateKVP(kvp) {
         const kvpRegex = /[^=]*=[^=]*/gm;
         if (typeof kvp.match(kvpRegex) !== null) {
-            const result_array = kvp.split('=').filter(elem => elem).slice(0, 2);
+            const result_array = kvp
+                .split("=")
+                .filter((elem) => elem)
+                .slice(0, 2);
             if (result_array.length != 2) {
                 return null;
             }
@@ -30,5 +33,4 @@ export default class Operation {
             return null;
         }
     }
-    ;
 }

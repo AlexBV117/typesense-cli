@@ -8,7 +8,7 @@ export default class Server extends Operation {
         try {
             const token = {
                 name: "server",
-                data: {}
+                data: {},
             };
             return token;
         }

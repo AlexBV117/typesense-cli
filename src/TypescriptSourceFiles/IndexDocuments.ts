@@ -1,6 +1,7 @@
 "Use Strict";
 import Operation from "./Operation";
 import Index_Token from "@Interfaces/Index.interface";
+import fs from "fs";
 
 export default class IndexDocuments extends Operation {
   private token: Index_Token;
@@ -12,6 +13,7 @@ export default class IndexDocuments extends Operation {
     const filePathRegex: RegExp = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
     const ObjRegex: RegExp = /{.*}/gm;
     const ArrayRegex: RegExp = /\[[^\[\]]*,?\]/gm;
+    const fs = require("fs");
     try {
       let token: Index_Token = {
         name: "index",
@@ -59,7 +61,7 @@ export default class IndexDocuments extends Operation {
   }
   public async processToken() {
     return new Promise(async (resolve, reject) => {
-      let _schema: string;
+      let _schema: string; // The schema defined in the schemas.json file
       if (!this.schemas.hasOwnProperty(this.token.data.collection)) {
         reject(
           `Collection Error: ${this.token.data.collection} is not defined in the schemas.json`
@@ -67,11 +69,18 @@ export default class IndexDocuments extends Operation {
         return;
       } else {
         _schema = this.schemas[this.token.data.collection];
-        console.log(_schema);
+        this.refreshCollections(_schema);
+        for (let i = this.token.data.data_files.length - 1; i >= 0; i--) {
+          this.indexFile(this.token.data.data_files[i]);
+        }
+        if (this.token.data.data_raw.length > 0) {
+          this.indexRawData();
+        }
       }
     });
   }
   private async refreshCollections(_schema: string) {
+    console.log(`Refreshing ${this.token.data.collection} collection:`);
     let _collection: string[];
     _collection = await this.client.collections().retrieve();
     if (!_collection.includes(this.token.data.collection)) {
@@ -80,7 +89,7 @@ export default class IndexDocuments extends Operation {
         .create(_schema)
         .then(
           () => {
-            console.log(`create <tmp>`);
+            console.log("└── New collection created");
           },
           (error: string) => {
             console.error(error);
@@ -92,7 +101,7 @@ export default class IndexDocuments extends Operation {
         .delete()
         .then(
           () => {
-            console.log(`Delete <tmp>`);
+            console.log("├── Old collection deleted");
           },
           (error: string) => {
             console.error(error);
@@ -103,7 +112,7 @@ export default class IndexDocuments extends Operation {
         .create(_schema)
         .then(
           () => {
-            console.log(`create <tmp>`);
+            console.log("└── New collection created");
           },
           (error: string) => {
             console.error(error);
@@ -111,4 +120,9 @@ export default class IndexDocuments extends Operation {
         );
     }
   }
+  private indexFile(path: string) {
+    let file_raw = fs.readFileSync(path, "utf8");
+    let file_parsed = JSON.parse(file_raw);
+  }
+  private indexRawData() {}
 }

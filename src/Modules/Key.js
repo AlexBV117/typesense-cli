@@ -16,8 +16,8 @@ export default class Key extends Operation {
                     expiresAt: "",
                     id: -1,
                     new: false,
-                    remove: false
-                }
+                    remove: false,
+                },
             };
             // Detect and remove the "new" and "remove" key words
             if (args.includes("new")) {
@@ -32,18 +32,24 @@ export default class Key extends Operation {
             }
             // Obviously a conflict so throw dat error
             if (token.data.new === true && token.data.remove === true) {
-                throw "Inconsistency Error: Both \"new\" and \"remove\" keywords have been passed";
+                throw 'Inconsistency Error: Both "new" and "remove" keywords have been passed';
             }
             for (let i = args.length - 1; i >= 0; i--) {
                 const kvp = this.generateKVP(args[i]); // Create a key value pair for the args passed
                 if (kvp !== null) {
                     switch (kvp[0]) {
                         case "actions": {
-                            token.data.actions = token.data.actions.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(/\s/gm, "").split(','));
+                            token.data.actions = token.data.actions.concat(kvp[1]
+                                .replace(/\"\[|\]\"/g, "")
+                                .replace(/\s/gm, "")
+                                .split(","));
                             break;
                         }
                         case "collections": {
-                            token.data.collections = token.data.collections.concat(kvp[1].replace(/\"\[|\]\"/g, '').replace(/\s/gm, "").split(','));
+                            token.data.collections = token.data.collections.concat(kvp[1]
+                                .replace(/\"\[|\]\"/g, "")
+                                .replace(/\s/gm, "")
+                                .split(","));
                             break;
                         }
                         case "description": {

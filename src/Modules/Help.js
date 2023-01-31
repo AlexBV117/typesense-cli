@@ -8,7 +8,7 @@ export default class Help extends Operation {
         try {
             const token = {
                 name: "help",
-                data: {}
+                data: {},
             };
             return token;
         }

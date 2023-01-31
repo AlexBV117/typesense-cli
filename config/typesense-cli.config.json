@@ -1,8 +1,8 @@
 {
 	"serverNode": {
 		"nodes": [{
-			"host": "192.168.56.137",
-			"port": "9090",
+			"host": "localhost",
+			"port": "8108",
 			"protocol": "http"
 		}],
 		"apiKey": "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAlwAAAAdzc2gtcn"
