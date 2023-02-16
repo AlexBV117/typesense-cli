@@ -30,6 +30,7 @@ export async function run(args) {
     //***********************//
     const parser = new Parser(args);
     const tokens = await parser.getTokens();
+    // Loop over all the tokens created by the parser and execute the desired logic
     for (let i = tokens.length - 1; i >= 0; i--) {
         await processToken(tokens[i]);
     }
@@ -78,7 +79,7 @@ function setRootDirPath() {
             // First try and resolve the full path to the users home directory
             const tmp2 = process.env.HOME;
             if (tmp2 === undefined) {
-                throw "Unresolved Path Error: Unable to locate the users configuration directory.";
+                throw "Unresolved Path Error: Unable to locate the users home directory.";
             }
             else {
                 result = tmp2 + "/.typesense-cli";
@@ -94,7 +95,7 @@ function setRootDirPath() {
                 // If the users home directory cant be found then try and find the default config file
                 const tmp1 = __dirname.match(/^(\/.*\/typesense-cli)/gm);
                 if (tmp1 === null) {
-                    throw "Unresolved Path Error: Unable to locate the default configuration directory.";
+                    throw "Unresolved Path Error: Unable to locate the default typesense-cli home directory.";
                 }
                 else {
                     result = tmp1[0];
@@ -106,6 +107,7 @@ function setRootDirPath() {
                 reject();
             }
         }
+        // All is well and can return whatever has come back
         resolve(result);
     });
 }

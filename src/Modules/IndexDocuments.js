@@ -1,5 +1,6 @@
 "Use Strict";
 import Operation from "./Operation";
+import fs from "fs";
 export default class IndexDocuments extends Operation {
     constructor(token, homeDir) {
         super(homeDir);
@@ -9,6 +10,7 @@ export default class IndexDocuments extends Operation {
         const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
         const ObjRegex = /{.*}/gm;
         const ArrayRegex = /\[[^\[\]]*,?\]/gm;
+        const fs = require("fs");
         try {
             let token = {
                 name: "index",
@@ -58,7 +60,7 @@ export default class IndexDocuments extends Operation {
     }
     async processToken() {
         return new Promise(async (resolve, reject) => {
-            let _schema;
+            let _schema; // The schema defined in the schemas.json file
             if (!this.schemas.hasOwnProperty(this.token.data.collection)) {
                 reject(`Collection Error: ${this.token.data.collection} is not defined in the schemas.json`);
                 return;
@@ -66,10 +68,17 @@ export default class IndexDocuments extends Operation {
             else {
                 _schema = this.schemas[this.token.data.collection];
                 this.refreshCollections(_schema);
+                for (let i = this.token.data.data_files.length - 1; i >= 0; i--) {
+                    this.indexFile(this.token.data.data_files[i]);
+                }
+                if (this.token.data.data_raw.length > 0) {
+                    this.indexRawData();
+                }
             }
         });
     }
     async refreshCollections(_schema) {
+        console.log(`Refreshing ${this.token.data.collection} collection:`);
         let _collection;
         _collection = await this.client.collections().retrieve();
         if (!_collection.includes(this.token.data.collection)) {
@@ -77,7 +86,7 @@ export default class IndexDocuments extends Operation {
                 .collections()
                 .create(_schema)
                 .then(() => {
-                console.log(`create <tmp>`);
+                console.log("└── New collection created");
             }, (error) => {
                 console.error(error);
             });
@@ -87,7 +96,7 @@ export default class IndexDocuments extends Operation {
                 .collections(this.token.data.collection)
                 .delete()
                 .then(() => {
-                console.log(`Delete <tmp>`);
+                console.log("├── Old collection deleted");
             }, (error) => {
                 console.error(error);
             });
@@ -95,10 +104,15 @@ export default class IndexDocuments extends Operation {
                 .collection()
                 .create(_schema)
                 .then(() => {
-                console.log(`create <tmp>`);
+                console.log("└── New collection created");
             }, (error) => {
                 console.error(error);
             });
         }
     }
+    indexFile(path) {
+        let file_raw = fs.readFileSync(path, "utf8");
+        let file_parsed = JSON.parse(file_raw);
+    }
+    indexRawData() { }
 }

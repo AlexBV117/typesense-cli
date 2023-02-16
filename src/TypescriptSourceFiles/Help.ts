@@ -1,5 +1,4 @@
 "Use Strict";
-
 import Operation from "./Operation";
 import Help_Token from "@Interfaces/Help.interface";
 
