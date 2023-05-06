@@ -32,8 +32,12 @@ export default class IndexDocuments extends Operation {
       // Iterate over the remaining args.
       for (let i = args.length - 1; i > 0; i--) {
         if (args[i].match(filePathRegex)) {
-          // Add the file paths to the paths array.
-          token.data.data_files.push(args[i]);
+          if (fs.existsSync(args[i])) {
+            // Add the file paths to the paths array.
+            token.data.data_files.push(args[i]);
+          } else {
+            throw `Data Reference Error: ${args[i]} no such file or directory`;
+          }
         } else if (args[i].match(ObjRegex)) {
           // Add raw json objects to the data array.
           if (args[i].match(ArrayRegex)) {
@@ -69,7 +73,9 @@ export default class IndexDocuments extends Operation {
         return;
       } else {
         _schema = this.schemas[this.token.data.collection];
-        this.refreshCollections(_schema);
+        if (!this.token.data.append) {
+          this.refreshCollections(_schema);
+        }
         for (let i = this.token.data.data_files.length - 1; i >= 0; i--) {
           this.indexFile(this.token.data.data_files[i]);
         }
@@ -81,9 +87,15 @@ export default class IndexDocuments extends Operation {
   }
   private async refreshCollections(_schema: string) {
     console.log(`Refreshing ${this.token.data.collection} collection:`);
-    let _collection: string[];
-    _collection = await this.client.collections().retrieve();
-    if (!_collection.includes(this.token.data.collection)) {
+    let _collections: any;
+    let _collectionExists: boolean = false;
+    _collections = await this.client.collections().retrieve();
+    for (let i = _collections.length - 1; i >= 0; i--) {
+      if (_collections[i].name == this.token.data.collection) {
+        _collectionExists = true;
+      }
+    }
+    if (!_collectionExists) {
       this.client
         .collections()
         .create(_schema)
@@ -92,10 +104,11 @@ export default class IndexDocuments extends Operation {
             console.log("└── New collection created");
           },
           (error: string) => {
+            console.log("New from scratch");
             console.error(error);
           }
         );
-    } else if (!this.token.data.append) {
+    } else {
       await this.client
         .collections(this.token.data.collection)
         .delete()
@@ -108,7 +121,7 @@ export default class IndexDocuments extends Operation {
           }
         );
       await this.client
-        .collection()
+        .collections()
         .create(_schema)
         .then(
           () => {
@@ -123,6 +136,9 @@ export default class IndexDocuments extends Operation {
   private indexFile(path: string) {
     let file_raw = fs.readFileSync(path, "utf8");
     let file_parsed = JSON.parse(file_raw);
+    if (file_parsed.length > this.settings.chunkSize) {
+      for (let i = file_parsed.length - 1; i >= 0; i--) {}
+    }
   }
   private indexRawData() {}
 }

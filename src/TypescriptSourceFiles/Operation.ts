@@ -1,4 +1,3 @@
-import Schemas from "./Schemas";
 ("use strict");
 export default class Operation {
   public typesense = require("typesense");

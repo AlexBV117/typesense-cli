@@ -107,4 +107,4 @@ dist
 .tern-port
 
 # Typesense Server Stoof
-typesense-data
+typesense-data/

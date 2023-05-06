@@ -7,6 +7,6 @@
 		}],
 		"apiKey": "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAlwAAAAdzc2gtcn"
 	},
-	"chunckSize": 10000,
+	"chunkSize": 10000,
 	"displayTitle": true
 }
