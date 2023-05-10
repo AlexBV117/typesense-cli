@@ -1,4 +1,6 @@
 "Use Strict";
+import { join } from "path";
+import { existsSync } from "fs";
 import IndexDocuments from "./IndexDocuments";
 import Collection from "./Collections";
 import Schemas from "./Schemas";
@@ -8,20 +10,12 @@ import Server from "./Server";
 import Help from "./Help";
 import Key from "./Key";
 import fs from "fs";
-let _home;
+// Locate the directory containing the user configuration
+const _home = setRootDirPath();
 let start_time;
 let finish_time;
 export async function run(args) {
     start_time = new Date();
-    // Locate the directory containing the user configuration
-    await setRootDirPath().then((value) => {
-        if (typeof value === "string") {
-            _home = value;
-        }
-    }, () => {
-        console.error("Critical Error: Unable to locate the required configuration files. Ending process");
-        process.exit(1);
-    });
     // Read and then display the typesense cli title
     const title = fs.readFileSync(_home + "/config/title.txt", "utf-8");
     console.log(title);
@@ -73,43 +67,12 @@ async function processToken(token) {
     }
 }
 function setRootDirPath() {
-    return new Promise((resolve, reject) => {
-        let result = "~/.typesense-cli"; // Default home path for user configuration
-        try {
-            // First try and resolve the full path to the users home directory
-            const tmp2 = process.env.HOME;
-            if (tmp2 === undefined) {
-                throw "Unresolved Path Error: Unable to locate the users home directory.";
-            }
-            else {
-                result = tmp2 + "/.typesense-cli";
-                // Has the user created a configuration file / directory
-                if (!fs.existsSync(result)) {
-                    throw `Unresolved Path Error: ${result} doesn't exist falling back to defaults.`;
-                }
-            }
-        }
-        catch (error) {
-            console.error(error);
-            try {
-                // If the users home directory cant be found then try and find the default config file
-                const tmp1 = __dirname.match(/^(\/.*\/typesense-cli)/gm);
-                if (tmp1 === null) {
-                    throw "Unresolved Path Error: Unable to locate the default typesense-cli home directory.";
-                }
-                else {
-                    result = tmp1[0];
-                }
-            }
-            catch (error) {
-                // If all else fails reject the promise.
-                console.error(error);
-                reject();
-            }
-        }
-        // All is well and can return whatever has come back
-        resolve(result);
-    });
+    const default_dir = join(__dirname, "..", "..");
+    if (existsSync(default_dir)) {
+        return default_dir;
+    }
+    console.log("Critical Error: Unable to locate the required configuration files. Ending process");
+    process.exit(1);
 }
 /**
  * Calculates the time difference between two date objects and generates an easily understood message for the user

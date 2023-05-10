@@ -1,6 +1,6 @@
 "Use Strict";
 import Operation from "./Operation";
-import fs from "fs";
+import { readFileSync, existsSync } from "fs";
 export default class IndexDocuments extends Operation {
     constructor(token, homeDir) {
         super(homeDir);
@@ -8,9 +8,6 @@ export default class IndexDocuments extends Operation {
     }
     static parse(args, _append) {
         const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
-        const ObjRegex = /{.*}/gm;
-        const ArrayRegex = /\[[^\[\]]*,?\]/gm;
-        const fs = require("fs");
         try {
             let token = {
                 name: "index",
@@ -29,7 +26,7 @@ export default class IndexDocuments extends Operation {
             // Iterate over the remaining args.
             for (let i = args.length - 1; i > 0; i--) {
                 if (args[i].match(filePathRegex)) {
-                    if (fs.existsSync(args[i])) {
+                    if (existsSync(args[i])) {
                         // Add the file paths to the paths array.
                         token.data.data_files.push(args[i]);
                     }
@@ -37,23 +34,19 @@ export default class IndexDocuments extends Operation {
                         throw `Data Reference Error: ${args[i]} no such file or directory`;
                     }
                 }
-                else if (args[i].match(ObjRegex)) {
-                    // Add raw json objects to the data array.
-                    if (args[i].match(ArrayRegex)) {
-                        // This takes any array passed as a string to be appended to the raw data array (allows for rested json objects)
-                        const tmp = args[i]
-                            .replace(/}[\s]?,[\s]?{/gm, "}<comma>{")
-                            .replace(/\"\[|\]\"/g, "");
-                        token.data.data_raw = token.data.data_raw.concat(tmp.split("<comma>"));
-                    }
-                    else {
-                        // If a single object is passed then just append it to the raw data array
-                        token.data.data_raw.push(args[i]);
-                    }
-                }
                 else {
-                    // Throw an error if an argument doesn't match the two supported data types.
-                    throw `Data Reference Error: ${args[i]} is an invalid argument. Expected a valid file path or a JSON object(s).`;
+                    try {
+                        let data = JSON.parse(args[i]);
+                        if (data instanceof Array) {
+                            token.data.data_raw.concat(data);
+                        }
+                        else {
+                            token.data.data_raw.push(data);
+                        }
+                    }
+                    catch (error) {
+                        console.error(error);
+                    }
                 }
             }
             return token;
@@ -125,8 +118,11 @@ export default class IndexDocuments extends Operation {
         }
     }
     indexFile(path) {
-        let file_raw = fs.readFileSync(path, "utf8");
+        let file_raw = readFileSync(path, "utf8");
         let file_parsed = JSON.parse(file_raw);
+        if (file_parsed.length > this.settings.chunkSize) {
+            for (let i = file_parsed.length - 1; i >= 0; i--) { }
+        }
     }
     indexRawData() { }
 }

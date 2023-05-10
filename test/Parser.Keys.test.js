@@ -42,9 +42,9 @@ test("Test => Parser => Keys => Normal new args", () => {
     expect(token.data.collections.length).toBe(1);
 
     expect(token.data.description).toBe("test key that wont break the parser");
-    
+
     expect(token.data.value).toBe("Ek?eLs@#ze$8N4gN");
-    
+
     expect(token.data.id).toBe(69420);
 
     expect(token.data.new).toBeTruthy();

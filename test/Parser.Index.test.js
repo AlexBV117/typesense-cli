@@ -14,14 +14,14 @@ test("Test => parser => Index => Normal", () => {
   ];
   const parser = new Parser(args);
   const tokens = parser.getTokens();
-  const token  = tokens[0];
+  const token = tokens[0];
   expect(token.name).toBe("index")
   expect(token.data.data_files.length).toBe(3);
   expect(token.data.data_raw.length).toBe(3);
   expect(token.data.append).toBeFalsy();
 });
 
-test("Test => parser => Index => Append",() => {
+test("Test => parser => Index => Append", () => {
   const args = [
     '/home/user/.fnm/node-versions/v18.12.1/installation/bin/node',
     '/home/user/scripts/typesense',
@@ -35,7 +35,7 @@ test("Test => parser => Index => Append",() => {
   ];
   const parser = new Parser(args);
   const tokens = parser.getTokens();
-  const token  = tokens[0];
+  const token = tokens[0];
   expect(token.name).toBe("index")
   expect(token.data.data_files.length).toBe(3);
   expect(token.data.data_raw.length).toBe(3);
