@@ -7,7 +7,7 @@ export default class IndexDocuments extends Operation {
         this.token = token;
     }
     static parse(args, _append) {
-        const filePathRegex = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
+        const filePathRegex = /((?:[^\/]*\/)*.*\.json)/gm;
         try {
             let token = {
                 name: "index",

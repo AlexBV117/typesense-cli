@@ -1,16 +1,18 @@
 "Use Strict";
 import Operation from "./Operation";
 import Index_Token from "@Interfaces/Index.interface";
-import {readFileSync, existsSync, copyFileSync} from "fs";
+import {readFileSync, existsSync } from "fs";
 
 export default class IndexDocuments extends Operation {
   private token: Index_Token;
-  constructor(token: Index_Token, homeDir: string) {
-    super(homeDir);
+  private instance: any;
+  constructor(token: Index_Token, instance: any){
+    super()
     this.token = token;
+    this.instance = instance;
   }
   public static parse(args: string[], _append?: boolean) {
-    const filePathRegex: RegExp = /(?:(?:\/|\.\/|\.\.\/)[^\/\\]+)+(?:\.json)/gm;
+    const filePathRegex: RegExp = /((?:[^\/]*\/)*.*\.json)/gm;
     try {
       let token: Index_Token = {
         name: "index",

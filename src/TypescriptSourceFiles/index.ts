@@ -1,6 +1,4 @@
 "Use Strict";
-import { join } from "path";
-import { existsSync } from "fs";
 import IndexDocuments from "./IndexDocuments";
 import Collection from "./Collections";
 import Schemas from "./Schemas";
@@ -13,6 +11,7 @@ import fs from "fs";
 
 // Locate the directory containing the user configuration
 const _home: string = setRootDirPath();
+const instance = createInstance();
 let start_time: Date;
 let finish_time: Date;
 
@@ -39,7 +38,7 @@ export async function run(args: any) {
 async function processToken(token: any) {
   switch (token.name) {
     case "index": {
-      const indexDocuments = new IndexDocuments(token, _home);
+      const indexDocuments = new IndexDocuments(token, instance);
       await indexDocuments.processToken().then(
         (data) => {},
         (error) => {
@@ -75,13 +74,22 @@ async function processToken(token: any) {
   }
 }
 
-function setRootDirPath() {
-  const default_dir = join(__dirname, "..", "..")
-  if(existsSync(default_dir)){
-    return default_dir
+function createInstance() {
+  try {
+    let settings =      
+    const schema =  require(_home + "/config/schemas.json")
+    let typesense = require("ty")
+    
+    return {
+      typesense: typesense,
+      settings: settings,
+      schema: schema,
+      client: client
+    }  
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
   }
-  console.log("Critical Error: Unable to locate the required configuration files. Ending process");
-  process.exit(1);
 }
 
 /**

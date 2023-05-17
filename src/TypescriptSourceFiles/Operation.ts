@@ -1,30 +1,12 @@
 ("use strict");
 export default class Operation {
-  public typesense = require("typesense");
-  public _home;
-  public settings;
-  public schemas;
-  public node;
-  public client;
-
-  constructor(home: string) {
-    this._home = home;
-    this.settings = require(home + "/config/typesense-cli.config.json");
-    this.schemas = require(home + "/config/schemas.json");
-    this.node = this.settings.serverNode; // typesense server node specified in the config file
-    this.client = new this.typesense.Client(this.node); // client to be used for process
-    if (this.client === null || this.client === undefined) {
-      console.error("Error: Unable to create client.");
-    }
-  }
-
   /**
    * Generates an array of length 2 from a string that maps a know word to a set of data
    * @param kvp String that needs to be split into a kvp
    * @returns Null if the sting doesn't match the regex or an array where the first item is the key and the second item is the value
    */
   public static generateKVP(kvp: string): Array<string> | null {
-    const kvpRegex = /[^=]*=[^=]*/gm;
+    const kvpRegex = /^[^=]*=[^=]*$/gm;
     if (typeof kvp.match(kvpRegex) !== null) {
       const result_array = kvp
         .split("=")

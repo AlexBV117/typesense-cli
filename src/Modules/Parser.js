@@ -11,6 +11,9 @@ import Server from "./Server";
 import Collection from "./Collections";
 // Parser Class that generates defined tokens for every passed flag from the command line.
 export default class Parser {
+    getTokens() {
+        return this.tokens;
+    }
     /**
      * Parser Constructor that takes the command line args and then generates the relevant tokens
      * @param args The command line arguments from the process
@@ -91,8 +94,5 @@ export default class Parser {
                 }
             }
         }
-    }
-    getTokens() {
-        return this.tokens;
     }
 }

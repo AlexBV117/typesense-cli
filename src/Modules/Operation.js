@@ -17,7 +17,7 @@ export default class Operation {
      * @returns Null if the sting doesn't match the regex or an array where the first item is the key and the second item is the value
      */
     static generateKVP(kvp) {
-        const kvpRegex = /[^=]*=[^=]*/gm;
+        const kvpRegex = /^[^=]*=[^=]*$/gm;
         if (typeof kvp.match(kvpRegex) !== null) {
             const result_array = kvp
                 .split("=")
