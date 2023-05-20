@@ -1,24 +1,17 @@
 {
   "compilerOptions": { 
-	  "baseUrl": ".",
-	  "paths": {
-		"@Modules/*": ["./src/Modules/*"],
-		"@Config/*": ["./config/*"],
-		"@Interfaces/*" : ["./src/TypescriptSourceFiles/Interfaces/*"]
-	  },
-	  "outDir": "src/Modules",
-	  "rootDir": "src/TypescriptSourceFiles",
+	  "outDir": "dist",
+	  "rootDir": "./src/",
 	  "target": "es2020",                                  
 	  "module": "es2020",                                
 	  "esModuleInterop": true,                             
 	  "forceConsistentCasingInFileNames": true,            
 	  "strict": true,                                      
-	  "skipLibCheck": true                                 
+	  "skipLibCheck": true,
+	  "removeComments": true                               
   },
   "exclude": [
-	"./src/TypescriptSourceFiles/Interfaces/*",
-	"refactor/cmdFunctions.ts",
-	"refactor/setup.ts",
+	"refactor/*",
 	"jest.config.ts"
   ],
 }

@@ -1,1 +1,1 @@
-typesense -i automatic 
+typesense -i automatic /home/sacha/Documents/GitHub/typesense-cli/config/data/books.json

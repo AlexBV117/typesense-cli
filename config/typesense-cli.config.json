@@ -8,5 +8,5 @@
 		"apiKey": "b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAlwAAAAdzc2gtcn"
 	},
 	"chunkSize": 10000,
-	"displayTitle": true
+	"displayTitle": false
 }

@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest --watchAll=true",
-    "compTest" : "tsc && jest"
+    "compTest": "tsc && jest"
   },
   "keywords": [
     "Typesense",
