@@ -77,6 +77,7 @@ export default class Parser {
   constructor(args: string[]) {
     // Isolate the user generated augments and concatenate them to a single string
     const argumentString: string = args.slice(2, args.length).join("|").trim();
+    console.log(argumentString);
     // Create an array of strings where each string contains the process and its associated data/parameters
     this.args = argumentString.split(/(?<![^\|\n])-{1,2}/gs).filter((elem) => {
       if (elem != "" && !elem.match(/^\|*$/)) {

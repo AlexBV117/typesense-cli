@@ -63,6 +63,7 @@ export default class Parser {
             },
         };
         const argumentString = args.slice(2, args.length).join("|").trim();
+        console.log(argumentString);
         this.args = argumentString.split(/(?<![^\|\n])-{1,2}/gs).filter((elem) => {
             if (elem != "" && !elem.match(/^\|*$/)) {
                 return elem;

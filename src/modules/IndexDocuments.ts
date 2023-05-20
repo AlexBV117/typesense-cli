@@ -1,3 +1,4 @@
+import { kMaxLength } from "buffer";
 import Index_Token from "../interfaces/Index.interface";
 import RunTime from "../RunTime";
 import { readFileSync, existsSync } from "fs";
@@ -12,6 +13,14 @@ interface collection {
   num_documents: number;
   symbols_to_index: Array<any>;
   token_separators: Array<any>;
+}
+/**
+ * Defines the response from the server form indexed documents
+ */
+interface response {
+  success: boolean;
+  error: string;
+  document: string;
 }
 
 export default class IndexDocuments {
@@ -85,6 +94,7 @@ export default class IndexDocuments {
       for (let file in this.token.data.data_files) {
         await this.indexFile(this.token.data.data_files[file]);
       }
+      console.log(`\nIndexing raw data into ${this.token.data.collection}`);
       await this.indexRawData(this.token.data.data_raw);
       return;
     } catch (error) {
@@ -146,20 +156,48 @@ export default class IndexDocuments {
     return;
   }
   private async indexFile(path: string) {
-    console.log(path);
+    console.log(`\nIndexing ${path} into ${this.token.data.collection}`);
     let file_raw = readFileSync(path, "utf8");
     let file_parsed = JSON.parse(file_raw);
     await this.indexRawData(file_parsed);
+    return;
   }
   private async indexRawData(data: Array<object>) {
+    if (data.length <= 0) return;
     const chunkSize = this.settings.getConfig().chunkSize;
-    let ittr = data.length / chunkSize;
-    for (let i = 0; i <= ittr; i++) {
-      let chunk = data.slice(i * chunkSize, chunkSize);
-      this.settings.client
-        .collections(this.token.data.collection)
-        .documents()
-        .import(chunk);
+    const iterations = data.length / chunkSize;
+    try {
+      for (let i = 0; i <= iterations; i++) {
+        let treeChar = iterations <= i + 1 ? "└──" : "├──";
+        let chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
+        let chunkLines = chunk.map((obj) => JSON.stringify(obj)).join("\n");
+        let response = await this.settings.client
+          .collections(this.token.data.collection)
+          .documents()
+          .import(chunkLines, { action: "create" });
+        let responses = response.split("\n").map((str: string) => {
+          if (str != "") {
+            return JSON.parse(str);
+          }
+          return "";
+        });
+        let failed = responses.filter(
+          (item: response) => item.success === false
+        );
+        if (failed.length > 0) {
+          console.log(
+            `${treeChar} Error: Indexing ${failed.length} of ${chunk.length} Items into ${this.token.data.collection} collection.`
+          );
+        } else {
+          console.log(
+            `${treeChar} Successfully indexed ${chunk.length} items into the ${this.token.data.collection} collection`
+          );
+        }
+      }
+    } catch (error) {
+      console.error(error);
     }
+    return;
   }
+  private async processResponse(responses: Array<response>) {}
 }

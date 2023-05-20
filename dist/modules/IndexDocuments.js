@@ -1,8 +1,6 @@
-import Operation from "./Operation";
 import { readFileSync, existsSync } from "fs";
-export default class IndexDocuments extends Operation {
+export default class IndexDocuments {
     constructor(token, settings) {
-        super();
         this.token = token;
         this.settings = settings;
     }
@@ -32,17 +30,12 @@ export default class IndexDocuments extends Operation {
                     }
                 }
                 else {
-                    try {
-                        let data = JSON.parse(args[i]);
-                        if (data instanceof Array) {
-                            token.data.data_raw.concat(data);
-                        }
-                        else {
-                            token.data.data_raw.push(data);
-                        }
+                    let data = JSON.parse(args[i]);
+                    if (data instanceof Array) {
+                        token.data.data_raw.concat(data);
                     }
-                    catch (error) {
-                        console.error(error);
+                    else {
+                        token.data.data_raw.push(data);
                     }
                 }
             }
@@ -66,6 +59,7 @@ export default class IndexDocuments extends Operation {
             for (let file in this.token.data.data_files) {
                 await this.indexFile(this.token.data.data_files[file]);
             }
+            console.log(`\nIndexing raw data into ${this.token.data.collection}`);
             await this.indexRawData(this.token.data.data_raw);
             return;
         }
@@ -114,20 +108,45 @@ export default class IndexDocuments extends Operation {
         return;
     }
     async indexFile(path) {
-        console.log(path);
+        console.log(`\nIndexing ${path} into ${this.token.data.collection}`);
         let file_raw = readFileSync(path, "utf8");
         let file_parsed = JSON.parse(file_raw);
         await this.indexRawData(file_parsed);
+        return;
     }
     async indexRawData(data) {
+        if (data.length <= 0)
+            return;
         const chunkSize = this.settings.getConfig().chunkSize;
-        let ittr = data.length / chunkSize;
-        for (let i = 0; i <= ittr; i++) {
-            let chunk = data.slice(i * chunkSize, chunkSize);
-            this.settings.client
-                .collections(this.token.data.collection)
-                .documents()
-                .import(chunk);
+        const iterations = data.length / chunkSize;
+        try {
+            for (let i = 0; i <= iterations; i++) {
+                let treeChar = iterations <= i + 1 ? "└──" : "├──";
+                let chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
+                let chunkLines = chunk.map((obj) => JSON.stringify(obj)).join("\n");
+                let response = await this.settings.client
+                    .collections(this.token.data.collection)
+                    .documents()
+                    .import(chunkLines, { action: "create" });
+                let responses = response.split("\n").map((str) => {
+                    if (str != "") {
+                        return JSON.parse(str);
+                    }
+                    return "";
+                });
+                let failed = responses.filter((item) => item.success === false);
+                if (failed.length > 0) {
+                    console.log(`${treeChar} Error: Indexing ${failed.length} of ${chunk.length} Items into ${this.token.data.collection} collection.`);
+                }
+                else {
+                    console.log(`${treeChar} Successfully indexed ${chunk.length} items into the ${this.token.data.collection} collection`);
+                }
+            }
         }
+        catch (error) {
+            console.error(error);
+        }
+        return;
     }
+    async processResponse(responses) { }
 }
