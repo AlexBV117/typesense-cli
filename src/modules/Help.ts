@@ -1,5 +1,5 @@
 import Operation from "./Operation";
-import Help_Token from "../interfaces/Help.interface";
+import Help_Token from "../interfaces/Help";
 import RunTime from "../RunTime";
 
 export default class Help extends Operation {

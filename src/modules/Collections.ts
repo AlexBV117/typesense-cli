@@ -1,5 +1,5 @@
 import Operation from "./Operation";
-import Collection_Token from "../interfaces/Collections.interface";
+import Collection_Token from "../interfaces/Collections";
 import RunTime from "../RunTime";
 
 export default class Collection extends Operation {

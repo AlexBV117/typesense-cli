@@ -1,5 +1,5 @@
 import Operation from "./Operation";
-import Keys_Token from "../interfaces/Keys.interface";
+import Keys_Token from "../interfaces/Keys";
 import RunTime from "../RunTime";
 
 export default class Key extends Operation {

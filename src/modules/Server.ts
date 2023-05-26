@@ -1,5 +1,5 @@
 import Operation from "./Operation";
-import Server_Token from "../interfaces/Server.interface";
+import Server_Token from "../interfaces/Server";
 import RunTime from "../RunTime";
 
 export default class Server extends Operation {

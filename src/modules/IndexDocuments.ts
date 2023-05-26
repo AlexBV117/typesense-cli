@@ -1,27 +1,7 @@
-import { kMaxLength } from "buffer";
-import Index_Token from "../interfaces/Index.interface";
+import { collection, response } from "../interfaces/TypesenseResponse";
+import Index_Token from "../interfaces/Index";
 import RunTime from "../RunTime";
 import { readFileSync, existsSync } from "fs";
-/**
- * Defines the collection object returned by the server
- */
-interface collection {
-  created_at: number;
-  default_sorting_field: string;
-  fields: Array<any>;
-  name: string;
-  num_documents: number;
-  symbols_to_index: Array<any>;
-  token_separators: Array<any>;
-}
-/**
- * Defines the response from the server form indexed documents
- */
-interface response {
-  success: boolean;
-  error: string;
-  document: string;
-}
 
 export default class IndexDocuments {
   private token: Index_Token;
@@ -45,6 +25,7 @@ export default class IndexDocuments {
           data_raw: [],
         },
       };
+      // Are we deleting the existing collection on the server before indexing
       if (_append === true) {
         token.data.append = true;
       }
@@ -75,32 +56,40 @@ export default class IndexDocuments {
       return null;
     }
   }
+  /**
+   * Handles the logic for indexing documents to the typesense server
+   * @returns Any meta data required for logging and error handling see the metadata interface
+   */
   public async processToken() {
-    try {
-      // The schema defined in the schemas.json file
-      let _schema: string;
-      // Does the provided collection have a defined schema
-      if (
-        !this.settings.getSchema().hasOwnProperty(this.token.data.collection)
-      ) {
-        throw new Error(
-          `Collection Error: ${this.token.data.collection} is not defined in the schemas.json`
-        );
-      }
-      _schema = this.settings.getSchema()[this.token.data.collection];
-      if (!this.token.data.append) {
-        await this.refreshCollections(_schema);
-      }
+    // Does the provided collection have a defined schema
+    if (!this.settings.getSchema().hasOwnProperty(this.token.data.collection)) {
+      throw new Error(
+        `Collection Error: ${this.token.data.collection} is not defined in the schemas.json`
+      );
+    }
+    // Refresh the collection on the server if we are not appending any data
+    if (!this.token.data.append) {
+      await this.refreshCollections(
+        this.settings.getSchema()[this.token.data.collection]
+      );
+    }
+    // Index all data provided from files on disc
+    if (this.token.data.data_files.length > 0) {
       for (let file in this.token.data.data_files) {
         await this.indexFile(this.token.data.data_files[file]);
       }
+    }
+    // Index the raw data passed by the command line
+    if (this.token.data.data_raw.length > 0) {
       console.log(`\nIndexing raw data into ${this.token.data.collection}`);
       await this.indexRawData(this.token.data.data_raw);
-      return;
-    } catch (error) {
-      console.error(error);
     }
+    return;
   }
+  /**
+   * Will delete then replace the specified collection or create the collection if it doesn't exist
+   * @param _schema Valid JSON string defining the collection
+   */
   private async refreshCollections(_schema: string) {
     console.log(`Refreshing ${this.token.data.collection} collection:`);
     // Set the collection state
@@ -116,7 +105,9 @@ export default class IndexDocuments {
         },
         (error: string) => {
           console.error(error);
-          throw new Error(`Collection Error:`);
+          throw new Error(
+            "Collection Error: Unable to fetch the collections from the server"
+          );
         }
       );
     // Check if the collection already exists on the server
@@ -136,7 +127,9 @@ export default class IndexDocuments {
           },
           (error: string) => {
             console.error(error);
-            throw new Error(`Collection Error:`);
+            throw new Error(
+              "Collection Error: Unable to delete the collection from the server"
+            );
           }
         );
     }
@@ -150,27 +143,48 @@ export default class IndexDocuments {
         },
         (error: string) => {
           console.error(error);
-          throw new Error(`Collection Error:`);
+          throw new Error(
+            "Collection Error: Unable to create a new collection on the server"
+          );
         }
       );
-    return;
   }
+  /**
+   * Reads in the specified file and indexes it with the indexRawData method
+   * @param path path to the data file from the command line
+   */
   private async indexFile(path: string) {
+    const Json_lines_regex: RegExp = /^{.*}$/gm;
     console.log(`\nIndexing ${path} into ${this.token.data.collection}`);
-    let file_raw = readFileSync(path, "utf8");
-    let file_parsed = JSON.parse(file_raw);
+    let file_raw: string = readFileSync(path, "utf8");
+    let file_parsed: Array<object>;
+    if (file_raw.match(Json_lines_regex)) {
+      file_parsed = file_raw.split("\n").map((str: string) => {
+        if (str != "") {
+          return JSON.parse(str);
+        }
+      });
+    } else {
+      file_parsed = JSON.parse(file_raw);
+    }
     await this.indexRawData(file_parsed);
-    return;
   }
+
+  /**
+   *
+   * @param data
+   * @returns
+   */
   private async indexRawData(data: Array<object>) {
-    if (data.length <= 0) return;
+    // const json_array_regex = /^\[[^]*\]$/g;
+    if (data.length == 0) return;
     const chunkSize = this.settings.getConfig().chunkSize;
     const iterations = data.length / chunkSize;
     try {
       for (let i = 0; i <= iterations; i++) {
         let treeChar = iterations <= i + 1 ? "└──" : "├──";
         let chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
-        let chunkLines = chunk.map((obj) => JSON.stringify(obj)).join("\n");
+        let chunkLines = this.jsonToLines(chunk);
         let response = await this.settings.client
           .collections(this.token.data.collection)
           .documents()
@@ -185,7 +199,7 @@ export default class IndexDocuments {
           (item: response) => item.success === false
         );
         if (failed.length > 0) {
-          console.log(
+          console.error(
             `${treeChar} Error: Indexing ${failed.length} of ${chunk.length} Items into ${this.token.data.collection} collection.`
           );
         } else {
@@ -197,7 +211,20 @@ export default class IndexDocuments {
     } catch (error) {
       console.error(error);
     }
-    return;
   }
-  private async processResponse(responses: Array<response>) {}
+  private jsonToLines(json: Array<object> | string): string | Error {
+    let return_string: string;
+    if (typeof json == "string") {
+      json = JSON.parse(json);
+    }
+    if (typeof json == "object") {
+      return_string = json.map((obj: object) => JSON.stringify(obj)).join("\n");
+    } else {
+      throw new Error(
+        `Type Error: Expected JSON to be of type object got ${typeof json}`
+      );
+    }
+    return return_string;
+  }
+  // private async processResponse(responses: Array<response>) {}
 }

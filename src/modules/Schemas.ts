@@ -1,5 +1,5 @@
 import Operation from "./Operation";
-import Schemas_Token from "../interfaces/Schemas.interface";
+import Schemas_Token from "../interfaces/Schemas";
 import RunTime from "../RunTime";
 
 export default class Schemas extends Operation {

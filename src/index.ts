@@ -1,5 +1,5 @@
 import RunTime from "./RunTime";
-import metaData from "./interfaces/metaData.interface";
+import metaData from "./interfaces/metaData";
 
 import IndexDocuments from "./modules/IndexDocuments";
 import Collection from "./modules/Collections";

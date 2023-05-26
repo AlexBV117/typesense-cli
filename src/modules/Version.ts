@@ -1,5 +1,5 @@
 import Operation from "./Operation";
-import Version_Token from "../interfaces/Version.interface";
+import Version_Token from "../interfaces/Version";
 import RunTime from "../RunTime";
 
 export default class Version extends Operation {
