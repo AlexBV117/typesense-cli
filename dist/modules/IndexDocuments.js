@@ -1,8 +1,9 @@
+import RunTime from "../RunTime";
 import { readFileSync, existsSync } from "fs";
+const runtime = RunTime.getInstance();
 export default class IndexDocuments {
-    constructor(token, settings) {
+    constructor(token) {
         this.token = token;
-        this.settings = settings;
     }
     static parse(args, _append) {
         const filePathRegex = /((?:[^\/]*\/)*.*\.json)/gm;
@@ -47,11 +48,11 @@ export default class IndexDocuments {
         }
     }
     async processToken() {
-        if (!this.settings.getSchema().hasOwnProperty(this.token.data.collection)) {
+        if (!runtime.settings.getSchema().hasOwnProperty(this.token.data.collection)) {
             throw new Error(`Collection Error: ${this.token.data.collection} is not defined in the schemas.json`);
         }
         if (!this.token.data.append) {
-            await this.refreshCollections(this.settings.getSchema()[this.token.data.collection]);
+            await this.refreshCollections(runtime.settings.getSchema()[this.token.data.collection]);
         }
         if (this.token.data.data_files.length > 0) {
             for (let file in this.token.data.data_files) {
@@ -65,10 +66,10 @@ export default class IndexDocuments {
         return;
     }
     async refreshCollections(_schema) {
-        console.log(`Refreshing ${this.token.data.collection} collection:`);
+        console.log(`\n╿Refreshing ${this.token.data.collection} collection:`);
         let _collections;
         let _collectionExists = false;
-        _collections = await this.settings.client
+        _collections = await runtime.settings.client
             .collections()
             .retrieve()
             .then((data) => {
@@ -83,7 +84,7 @@ export default class IndexDocuments {
             }
         });
         if (_collectionExists) {
-            await this.settings.client
+            await runtime.settings.client
                 .collections(this.token.data.collection)
                 .delete()
                 .then(() => {
@@ -93,7 +94,7 @@ export default class IndexDocuments {
                 throw new Error("Collection Error: Unable to delete the collection from the server");
             });
         }
-        await this.settings.client
+        await runtime.settings.client
             .collections()
             .create(_schema)
             .then(() => {
@@ -105,7 +106,7 @@ export default class IndexDocuments {
     }
     async indexFile(path) {
         const Json_lines_regex = /^{.*}$/gm;
-        console.log(`\nIndexing ${path} into ${this.token.data.collection}`);
+        console.log(`\n╿Indexing ${path} into ${this.token.data.collection}`);
         let file_raw = readFileSync(path, "utf8");
         let file_parsed;
         if (file_raw.match(Json_lines_regex)) {
@@ -121,28 +122,25 @@ export default class IndexDocuments {
         await this.indexRawData(file_parsed);
     }
     async indexRawData(data) {
+        let errors = [];
         if (data.length == 0)
             return;
-        const chunkSize = this.settings.getConfig().chunkSize;
+        const chunkSize = runtime.settings.getConfig().chunkSize;
         const iterations = data.length / chunkSize;
         try {
             for (let i = 0; i <= iterations; i++) {
                 let treeChar = iterations <= i + 1 ? "└──" : "├──";
                 let chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
-                let chunkLines = this.jsonToLines(chunk);
-                let response = await this.settings.client
+                let chunkLines = this.jsonArrayToLines(chunk);
+                let response = await runtime.settings.client
                     .collections(this.token.data.collection)
                     .documents()
                     .import(chunkLines, { action: "create" });
-                let responses = response.split("\n").map((str) => {
-                    if (str != "") {
-                        return JSON.parse(str);
-                    }
-                    return "";
-                });
+                let responses = this.jsonLinesToArray(response);
                 let failed = responses.filter((item) => item.success === false);
                 if (failed.length > 0) {
                     console.error(`${treeChar} Error: Indexing ${failed.length} of ${chunk.length} Items into ${this.token.data.collection} collection.`);
+                    errors.push(failed);
                 }
                 else {
                     console.log(`${treeChar} Successfully indexed ${chunk.length} items into the ${this.token.data.collection} collection`);
@@ -152,12 +150,10 @@ export default class IndexDocuments {
         catch (error) {
             console.error(error);
         }
+        return errors;
     }
-    jsonToLines(json) {
+    jsonArrayToLines(json) {
         let return_string;
-        if (typeof json == "string") {
-            json = JSON.parse(json);
-        }
         if (typeof json == "object") {
             return_string = json.map((obj) => JSON.stringify(obj)).join("\n");
         }
@@ -165,5 +161,13 @@ export default class IndexDocuments {
             throw new Error(`Type Error: Expected JSON to be of type object got ${typeof json}`);
         }
         return return_string;
+    }
+    jsonLinesToArray(response) {
+        return response.split("\n").map((str) => {
+            if (str == "")
+                return;
+            else
+                return JSON.parse(str);
+        });
     }
 }

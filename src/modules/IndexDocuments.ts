@@ -1,15 +1,15 @@
+import RunTime from "../RunTime";
 import { collection, response } from "../interfaces/TypesenseResponse";
 import Index_Token from "../interfaces/Index";
-import RunTime from "../RunTime";
 import { readFileSync, existsSync } from "fs";
+// runtime sits globally so that it can always be accessed for logging
+const runtime = RunTime.getInstance();
 
 export default class IndexDocuments {
   private token: Index_Token;
-  private settings: any;
 
-  constructor(token: Index_Token, settings: RunTime) {
+  constructor(token: Index_Token) {
     this.token = token;
-    this.settings = settings;
   }
 
   public static parse(args: string[], _append?: boolean) {
@@ -38,7 +38,9 @@ export default class IndexDocuments {
             // Add the file paths to the paths array.
             token.data.data_files.push(args[i]);
           } else {
-            throw `Data Reference Error: ${args[i]} no such file or directory`;
+            throw new Error(
+              `Data Reference Error: ${args[i]} no such file or directory`
+            );
           }
         } else {
           let data = JSON.parse(args[i]);
@@ -52,51 +54,59 @@ export default class IndexDocuments {
       }
       return token;
     } catch (error) {
-      console.error(error);
+      runtime.logger.error(error);
       return null;
     }
   }
   /**
    * Handles the logic for indexing documents to the typesense server
-   * @returns Any meta data required for logging and error handling see the metadata interface
    */
   public async processToken() {
-    // Does the provided collection have a defined schema
-    if (!this.settings.getSchema().hasOwnProperty(this.token.data.collection)) {
-      throw new Error(
-        `Collection Error: ${this.token.data.collection} is not defined in the schemas.json`
-      );
-    }
-    // Refresh the collection on the server if we are not appending any data
-    if (!this.token.data.append) {
-      await this.refreshCollections(
-        this.settings.getSchema()[this.token.data.collection]
-      );
-    }
-    // Index all data provided from files on disc
-    if (this.token.data.data_files.length > 0) {
-      for (let file in this.token.data.data_files) {
-        await this.indexFile(this.token.data.data_files[file]);
+    try {
+      // Does the provided collection have a defined schema
+      if (
+        !runtime.settings.getSchema().hasOwnProperty(this.token.data.collection)
+      ) {
+        throw new Error(
+          `Collection Error: ${this.token.data.collection} is not defined in the schemas.json`
+        );
       }
+      // Refresh the collection on the server if we are not appending any data
+      if (!this.token.data.append) {
+        await this.refreshCollections(
+          runtime.settings.getSchema()[this.token.data.collection]
+        );
+      }
+      // Index all data provided from files on disc
+      if (this.token.data.data_files.length > 0) {
+        for (let file in this.token.data.data_files) {
+          await this.indexFile(this.token.data.data_files[file]);
+        }
+      }
+      // Index the raw data passed by the command line
+      if (this.token.data.data_raw.length > 0) {
+        runtime.logger.log(
+          `\n╿Indexing raw data into ${this.token.data.collection}`
+        );
+        await this.indexRawData(this.token.data.data_raw);
+      }
+    } catch (error) {
+      runtime.logger.error(error);
     }
-    // Index the raw data passed by the command line
-    if (this.token.data.data_raw.length > 0) {
-      console.log(`\nIndexing raw data into ${this.token.data.collection}`);
-      await this.indexRawData(this.token.data.data_raw);
-    }
-    return;
   }
   /**
    * Will delete then replace the specified collection or create the collection if it doesn't exist
    * @param _schema Valid JSON string defining the collection
    */
   private async refreshCollections(_schema: string) {
-    console.log(`Refreshing ${this.token.data.collection} collection:`);
+    runtime.logger.log(
+      `\n╿Refreshing ${this.token.data.collection} collection:`
+    );
     // Set the collection state
     let _collections: Array<collection>;
     let _collectionExists: boolean = false;
     // Get the collections from the server
-    _collections = await this.settings.client
+    _collections = await runtime.settings.client
       .collections()
       .retrieve()
       .then(
@@ -104,7 +114,7 @@ export default class IndexDocuments {
           return data;
         },
         (error: string) => {
-          console.error(error);
+          runtime.logger.error(error);
           throw new Error(
             "Collection Error: Unable to fetch the collections from the server"
           );
@@ -118,15 +128,15 @@ export default class IndexDocuments {
     });
     // If it exists delete it
     if (_collectionExists) {
-      await this.settings.client
+      await runtime.settings.client
         .collections(this.token.data.collection)
         .delete()
         .then(
           () => {
-            console.log("├── Old collection deleted");
+            runtime.logger.log("├── Old collection deleted");
           },
           (error: string) => {
-            console.error(error);
+            runtime.logger.error(error);
             throw new Error(
               "Collection Error: Unable to delete the collection from the server"
             );
@@ -134,15 +144,15 @@ export default class IndexDocuments {
         );
     }
     // Recreate the collection on the server
-    await this.settings.client
+    await runtime.settings.client
       .collections()
       .create(_schema)
       .then(
         () => {
-          console.log("└── New collection created");
+          runtime.logger.log("└── New collection created");
         },
         (error: string) => {
-          console.error(error);
+          runtime.logger.error(error);
           throw new Error(
             "Collection Error: Unable to create a new collection on the server"
           );
@@ -155,15 +165,15 @@ export default class IndexDocuments {
    */
   private async indexFile(path: string) {
     const Json_lines_regex: RegExp = /^{.*}$/gm;
-    console.log(`\nIndexing ${path} into ${this.token.data.collection}`);
+    runtime.logger.log(
+      `\n╿Indexing ${path} into ${this.token.data.collection}`
+    );
     let file_raw: string = readFileSync(path, "utf8");
     let file_parsed: Array<object>;
+    //  As the cli chunks the documents before indexing them it needs to take
+    // any json lines files and convert them to an iterable object
     if (file_raw.match(Json_lines_regex)) {
-      file_parsed = file_raw.split("\n").map((str: string) => {
-        if (str != "") {
-          return JSON.parse(str);
-        }
-      });
+      file_parsed = this.jsonLinesToArray(file_raw);
     } else {
       file_parsed = JSON.parse(file_raw);
     }
@@ -171,60 +181,60 @@ export default class IndexDocuments {
   }
 
   /**
-   *
-   * @param data
-   * @returns
+   * The main function that actually handel's the indexing
+   * @param data this is an iterable JSON array containing the documents to be indexed
    */
   private async indexRawData(data: Array<object>) {
+    let errors: Array<object> = [];
     // const json_array_regex = /^\[[^]*\]$/g;
     if (data.length == 0) return;
-    const chunkSize = this.settings.getConfig().chunkSize;
+    const chunkSize = runtime.settings.getConfig().chunkSize;
     const iterations = data.length / chunkSize;
-    try {
-      for (let i = 0; i <= iterations; i++) {
-        let treeChar = iterations <= i + 1 ? "└──" : "├──";
-        let chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
-        let chunkLines = this.jsonToLines(chunk);
-        let response = await this.settings.client
-          .collections(this.token.data.collection)
-          .documents()
-          .import(chunkLines, { action: "create" });
-        let responses = response.split("\n").map((str: string) => {
-          if (str != "") {
-            return JSON.parse(str);
-          }
-          return "";
-        });
-        let failed = responses.filter(
-          (item: response) => item.success === false
+    for (let i = 0; i <= iterations; i++) {
+      let treeChar = iterations <= i + 1 ? "└──" : "├──";
+
+      let chunk: Array<object> = data.slice(i * chunkSize, (i + 1) * chunkSize);
+
+      let chunkLines = this.jsonArrayToLines(chunk);
+
+      let response: string = await runtime.settings.client
+        .collections(this.token.data.collection)
+        .documents()
+        .import(chunkLines, { action: "create" });
+
+      let responses: Array<response> = this.parseResponse(response);
+
+      let failed = responses.filter((item: response) => item.success === false);
+
+      if (failed.length > 0) {
+        runtime.logger.warn(
+          `${treeChar} Error: Indexing ${failed.length} of ${chunk.length} Items into ${this.token.data.collection} collection.`
         );
-        if (failed.length > 0) {
-          console.error(
-            `${treeChar} Error: Indexing ${failed.length} of ${chunk.length} Items into ${this.token.data.collection} collection.`
-          );
-        } else {
-          console.log(
-            `${treeChar} Successfully indexed ${chunk.length} items into the ${this.token.data.collection} collection`
-          );
-        }
+        errors.push(failed);
+      } else {
+        runtime.logger.log(
+          `${treeChar} Successfully indexed ${chunk.length} items into the ${this.token.data.collection} collection`
+        );
       }
-    } catch (error) {
-      console.error(error);
     }
+    return errors;
   }
-  private jsonToLines(json: Array<object> | string): string | Error {
-    let return_string: string;
-    if (typeof json == "string") {
-      json = JSON.parse(json);
-    }
-    if (typeof json == "object") {
-      return_string = json.map((obj: object) => JSON.stringify(obj)).join("\n");
-    } else {
-      throw new Error(
-        `Type Error: Expected JSON to be of type object got ${typeof json}`
-      );
-    }
-    return return_string;
+
+  private jsonArrayToLines(jsonArray: Array<object>): string {
+    return jsonArray.map((obj: object) => JSON.stringify(obj)).join("\n");
   }
-  // private async processResponse(responses: Array<response>) {}
+
+  private jsonLinesToArray(lines: string): Array<object> {
+    return lines.split("\n").map((str: string) => {
+      if (str == "") return;
+      else return JSON.parse(str);
+    });
+  }
+
+  private parseResponse(lines: string): Array<response> {
+    return lines.split("\n").map((str: string) => {
+      if (str == "") return;
+      else return JSON.parse(str);
+    });
+  }
 }
