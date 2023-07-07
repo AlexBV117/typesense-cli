@@ -1,6 +1,6 @@
 import { join } from "path";
 import { existsSync, readFileSync } from "fs";
-export default class Settings {
+class Settings {
     getHome() {
         return this.home;
     }
@@ -39,3 +39,4 @@ export default class Settings {
     }
 }
 Settings.single_instance = null;
+export default Settings;

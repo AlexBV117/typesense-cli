@@ -1,6 +1,6 @@
 import Settings from "./Settings";
 import logger from "./logger";
-export default class RunTime {
+class RunTime {
     constructor() {
         this.settings = Settings.getInstance();
         this.logger = logger.getInstance(this.settings.getHome());
@@ -13,3 +13,4 @@ export default class RunTime {
     }
 }
 RunTime.single_instance = null;
+export default RunTime;

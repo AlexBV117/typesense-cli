@@ -1,6 +1,6 @@
 import { join } from "path";
 import { writeFileSync } from "fs";
-export default class logger {
+class logger {
     constructor(_logDir) {
         this.logFileData = "";
         function exitHandler() {
@@ -55,3 +55,4 @@ export default class logger {
     }
 }
 logger.single_instance = null;
+export default logger;
