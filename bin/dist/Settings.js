@@ -31,7 +31,7 @@ class Settings {
         return Settings.single_instance;
     }
     setRootDirPath() {
-        const default_dir = join(__dirname, "..");
+        const default_dir = join(__dirname, "..", "..");
         if (existsSync(default_dir)) {
             return default_dir;
         }

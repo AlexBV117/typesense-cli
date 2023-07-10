@@ -1,11 +1,11 @@
-import RunTime from "../RunTime";
 import { collection, response } from "../interfaces/TypesenseResponse";
-import Index_Token from "../interfaces/Index";
 import { readFileSync, existsSync } from "fs";
+import Index_Token from "../interfaces/Index";
+import RunTime from "../RunTime";
 // runtime sits globally so that it can always be accessed for logging
 const runtime = RunTime.getInstance();
 
-export default class IndexDocuments {
+export default class Index {
   private token: Index_Token;
 
   constructor(token: Index_Token) {
@@ -17,7 +17,7 @@ export default class IndexDocuments {
     try {
       // Create the Index_Token that structures the data passed by the command line
       let token: Index_Token = {
-        constructor: IndexDocuments.prototype.constructor,
+        constructor: Index.prototype.constructor,
         data: {
           append: false,
           collection: "",

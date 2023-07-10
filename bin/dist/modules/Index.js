@@ -1,7 +1,7 @@
-import RunTime from "../RunTime";
 import { readFileSync, existsSync } from "fs";
+import RunTime from "../RunTime";
 const runtime = RunTime.getInstance();
-export default class IndexDocuments {
+export default class Index {
     constructor(token) {
         this.token = token;
     }
@@ -9,7 +9,7 @@ export default class IndexDocuments {
         const filePathRegex = /((?:[^\/]*\/)*.*\.json)/gm;
         try {
             let token = {
-                constructor: IndexDocuments.prototype.constructor,
+                constructor: Index.prototype.constructor,
                 data: {
                     append: false,
                     collection: "",

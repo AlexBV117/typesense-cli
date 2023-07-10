@@ -1,11 +1,8 @@
-import Operation from "./Operation";
 import Keys_Token from "../interfaces/Keys";
 import RunTime from "../RunTime";
 
-export default class Key extends Operation {
-  constructor(token: Keys_Token, setting: RunTime) {
-    super();
-  }
+export default class Key {
+  constructor(token: Keys_Token, setting: RunTime) {}
   public static parse(args: string[]) {
     try {
       const token: Keys_Token = {
@@ -37,7 +34,7 @@ export default class Key extends Operation {
         throw 'Inconsistency Error: Both "new" and "remove" keywords have been passed';
       }
       for (let i = args.length - 1; i >= 0; i--) {
-        const kvp = this.generateKVP(args[i]); // Create a key value pair for the args passed
+        const kvp = ["", ""]; // Create a key value pair for the args passed
         if (kvp !== null) {
           switch (kvp[0]) {
             case "actions": {

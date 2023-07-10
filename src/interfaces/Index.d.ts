@@ -1,4 +1,4 @@
-import IndexDocuments from "../modules/IndexDocuments";
+import IndexDocuments from "../modules/Index";
 export default interface Index_Token {
   constructor: typeof IndexDocuments.prototype.constructor;
   data: {

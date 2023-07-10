@@ -1,11 +1,8 @@
-import Operation from "./Operation";
 import Collection_Token from "../interfaces/Collections";
 import RunTime from "../RunTime";
 
-export default class Collection extends Operation {
-  constructor(token: Collection_Token, home: RunTime) {
-    super();
-  }
+export default class Collection {
+  constructor(token: Collection_Token, home: RunTime) {}
   public static parse(args: string[]) {
     try {
       const token: Collection_Token = {

@@ -1,8 +1,5 @@
-import Operation from "./Operation";
-export default class Key extends Operation {
-    constructor(token, setting) {
-        super();
-    }
+export default class Key {
+    constructor(token, setting) { }
     static parse(args) {
         try {
             const token = {
@@ -32,7 +29,7 @@ export default class Key extends Operation {
                 throw 'Inconsistency Error: Both "new" and "remove" keywords have been passed';
             }
             for (let i = args.length - 1; i >= 0; i--) {
-                const kvp = this.generateKVP(args[i]);
+                const kvp = ["", ""];
                 if (kvp !== null) {
                     switch (kvp[0]) {
                         case "actions": {

@@ -39,17 +39,17 @@ class logger {
         console.log(message);
     }
     info(message) {
-        message = "INFO:" + message + "\n";
+        message = "INFO: " + message + "\n";
         this.logFileData += message;
         console.log("\x1b[95m%s\x1b[0m", message);
     }
     warn(message) {
-        message = "WARN:" + message + "\n";
+        message = "WARN: " + message + "\n";
         this.logFileData += message;
         console.log("\x1b[93m%s\x1b[0m", message);
     }
     error(message) {
-        message = "ERROR:" + message + "\n";
+        message = "ERROR: " + message + "\n";
         this.logFileData += message;
         console.log("\x1b[31m%s\x1b[0m", message);
     }

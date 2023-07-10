@@ -48,7 +48,7 @@ export default class Settings {
   }
   // Sets the path of the typescript-cli folder
   private setRootDirPath() {
-    const default_dir = join(__dirname, "..");
+    const default_dir = join(__dirname, "..", "..");
     if (existsSync(default_dir)) {
       return default_dir;
     }

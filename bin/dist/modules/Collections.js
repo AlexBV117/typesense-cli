@@ -1,8 +1,5 @@
-import Operation from "./Operation";
-export default class Collection extends Operation {
-    constructor(token, home) {
-        super();
-    }
+export default class Collection {
+    constructor(token, home) { }
     static parse(args) {
         try {
             const token = {

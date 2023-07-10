@@ -45,17 +45,17 @@ export default class logger {
     console.log(message);
   }
   public info(message: string) {
-    message = "INFO:" + message + "\n";
+    message = "INFO: " + message + "\n";
     this.logFileData += message;
     console.log("\x1b[95m%s\x1b[0m", message);
   }
   public warn(message: string) {
-    message = "WARN:" + message + "\n";
+    message = "WARN: " + message + "\n";
     this.logFileData += message;
     console.log("\x1b[93m%s\x1b[0m", message);
   }
   public error(message: string | unknown) {
-    message = "ERROR:" + message + "\n";
+    message = "ERROR: " + message + "\n";
     this.logFileData += message;
     console.log("\x1b[31m%s\x1b[0m", message);
   }
