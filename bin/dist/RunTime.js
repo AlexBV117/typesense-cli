@@ -1,16 +1,42 @@
-import Settings from "./Settings";
-import logger from "./logger";
-class RunTime {
+import { join } from "path";
+import { existsSync, readFileSync } from "fs";
+class Settings {
+    getHome() {
+        return this.home;
+    }
+    getConfig() {
+        return this.config;
+    }
+    getSchema() {
+        return this.schema;
+    }
+    getTitle() {
+        return this.title;
+    }
     constructor() {
-        this.settings = Settings.getInstance();
-        this.logger = logger.getInstance(this.settings.getHome());
+        this.typesense = require("typesense");
+        this.home = this.setRootDirPath();
+        this.config = require(this.home + "/.typesense/config.json");
+        this.schema = require(this.home + "/.typesense/schemas.json");
+        this.title = readFileSync(this.home + "/.typesense/title.txt", "utf-8");
+        this.client = new this.typesense.Client(this.config.serverNode);
+        if (this.client === null || this.client === undefined) {
+            throw new Error("Critical Error: Unable to create client.");
+        }
     }
     static getInstance() {
-        if (RunTime.single_instance === null) {
-            RunTime.single_instance = new RunTime();
+        if (Settings.single_instance === null) {
+            Settings.single_instance = new Settings();
         }
-        return RunTime.single_instance;
+        return Settings.single_instance;
+    }
+    setRootDirPath() {
+        const default_dir = join(__dirname, "..", "..");
+        if (existsSync(default_dir)) {
+            return default_dir;
+        }
+        throw new Error("Critical Error: Unable to locate the required configuration files. Ending process");
     }
 }
-RunTime.single_instance = null;
-export default RunTime;
+Settings.single_instance = null;
+export default Settings;

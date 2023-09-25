@@ -1,13 +1,36 @@
 import RunTime from "./RunTime";
+import Logger from "./Logger";
 import Parser from "./modules/Parser";
-const runtime = RunTime.getInstance();
 export async function run(args) {
-    if (runtime.settings.getConfig().displayTitle) {
-        runtime.logger.log(runtime.settings.getTitle());
+    console.log("hello world");
+    const globalFlags = getGlobalFlags(args);
+    const runtime = RunTime.getInstance();
+    console.log("TEST RUNTIME: " + runtime.getHome());
+    const logger = Logger.getInstance(runtime.getHome(), globalFlags.verbose);
+    if (runtime.getConfig().displayTitle) {
+        logger.log(runtime.getTitle());
     }
     const parser = new Parser(args);
     const tokens = parser.getTokens();
-    for (let i in tokens) {
-        console.log(tokens[i]);
+    try {
+        for (let token of tokens) {
+            console.log(token);
+        }
     }
+    catch (error) {
+        logger.error(error);
+        process.exit(1);
+    }
+}
+function getGlobalFlags(args) {
+    const modifiers = {
+        verbose: false,
+    };
+    const verboseModeRegex = /^-[^v]*v[^v]*/gm;
+    for (let i in args) {
+        if (verboseModeRegex.test(args[i])) {
+            modifiers.verbose = true;
+        }
+    }
+    return modifiers;
 }
